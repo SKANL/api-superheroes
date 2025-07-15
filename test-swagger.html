@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Test Swagger UI</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.18.1/swagger-ui.css"/>
+</head>
+<body>
+  <h1>Test de Swagger UI</h1>
+  <div id="swagger-ui"></div>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.18.1/swagger-ui-bundle.js"></script>
+  <script>
+    console.log('SwaggerUIBundle:', SwaggerUIBundle);
+    
+    // Test 1: Cargar sin filtros
+    console.log('Iniciando carga de Swagger UI...');
+    
+    const ui = SwaggerUIBundle({
+      dom_id: '#swagger-ui',
+      url: '/api/docs/swagger.json',
+      presets: [SwaggerUIBundle.presets.apis],
+      layout: 'BaseLayout',
+      docExpansion: 'list',
+      deepLinking: true,
+      displayRequestDuration: true,
+      onComplete: function() {
+        console.log('Swagger UI cargado completamente');
+      }
+    });
+    
+    // Test 2: Verificar la respuesta del endpoint
+    fetch('/api/docs/swagger.json')
+      .then(response => response.json())
+      .then(data => {
+        console.log('Swagger JSON response:', data);
+        console.log('Available paths:', Object.keys(data.paths || {}));
+        console.log('Available tags:', data.tags);
+        
+        // Test 3: Verificar operaciones por tag
+        const paths = data.paths || {};
+        const operations = [];
+        
+        Object.keys(paths).forEach(path => {
+          Object.keys(paths[path]).forEach(method => {
+            const operation = paths[path][method];
+            if (operation.tags) {
+              operations.push({
+                path,
+                method,
+                tags: operation.tags,
+                summary: operation.summary
+              });
+            }
+          });
+        });
+        
+        console.log('All operations:', operations);
+        console.log('TeamBattles operations:', operations.filter(op => 
+          op.tags && op.tags.includes('TeamBattles')
+        ));
+        console.log('Heroes operations:', operations.filter(op => 
+          op.tags && op.tags.includes('Heroes')
+        ));
+        console.log('Villains operations:', operations.filter(op => 
+          op.tags && op.tags.includes('Villains')
+        ));
+      })
+      .catch(error => {
+        console.error('Error fetching swagger.json:', error);
+      });
+  </script>
+</body>
+</html>

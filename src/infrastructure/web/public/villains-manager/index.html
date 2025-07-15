@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Villains Manager</title>
+  <link rel="stylesheet" href="/swagger-custom/swagger-ui.css"/>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .hidden { display: none; }
+    .villain-card { 
+      border: 1px solid #ddd; 
+      border-radius: 8px; 
+      padding: 15px; 
+      margin: 10px 0; 
+      background-color: #f9f9f9;
+    }
+    .villain-card.selected { 
+      background-color: #ffe6e6; 
+      border-color: #ff1a1a;
+    }
+    .stats { margin-top: 10px; }
+    .container { max-width: 800px; margin: 0 auto; }
+    header { background: #ffe6e6; padding: 10px 20px; border-radius: 8px; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; }
+    .form-group input, .form-group select { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd; }
+    button { 
+      padding: 8px 16px; 
+      background-color: #ff1a1a; 
+      color: white; 
+      border: none; 
+      border-radius: 4px; 
+      cursor: pointer; 
+    }
+    button:hover { background-color: #cc0000; }
+    button:disabled { background-color: #d9d9d9; cursor: not-allowed; }
+    .actions { margin-top: 20px; display: flex; gap: 10px; }
+    .tab-buttons { display: flex; margin-bottom: 20px; }
+    .tab-button { 
+      padding: 10px 20px; 
+      background-color: #f0f0f0; 
+      border: 1px solid #ddd; 
+      border-bottom: none; 
+      border-radius: 5px 5px 0 0;
+      cursor: pointer;
+    }
+    .tab-button.active { 
+      background-color: #fff;
+      border-bottom: 2px solid #ff1a1a;
+      font-weight: bold;
+    }
+    .search-bar {
+      margin-bottom: 20px;
+    }
+    .search-bar input {
+      width: 70%;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+    }
+    .city-filter {
+      margin-left: 10px;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1 id="main-title" tabindex="0">Villains Manager</h1>
+      <div style="margin-top: 10px;">
+        <a href="/dashboard" style="text-decoration: none; color: #ff1a1a;">← Volver al Panel de Control</a>
+      </div>
+    </header>
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+      <div class="tab-buttons">
+        <div id="viewTab" class="tab-button active">Ver Villanos</div>
+        <div id="createTab" class="tab-button">Crear Villano</div>
+      </div>
+      <a href="/api/docs/villains" target="_blank" style="text-decoration: none; background-color: #ff1a1a; color: white; padding: 8px 16px; border-radius: 4px;">
+        Ver API Docs
+      </a>
+    </div>
+    
+    <div id="viewVillains">
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Buscar villanos por nombre o alias...">
+        <select id="cityFilter" class="city-filter">
+          <option value="">Todas las ciudades</option>
+        </select>
+      </div>
+      
+      <div id="villainsList"></div>
+    </div>
+    
+    <div id="createVillain" class="hidden">
+      <h2>Crear Nuevo Villano</h2>
+      <form id="villainForm">
+        <div class="form-group">
+          <label for="name">Nombre:</label>
+          <input type="text" id="name" required>
+        </div>
+        <div class="form-group">
+          <label for="alias">Alias:</label>
+          <input type="text" id="alias" required>
+        </div>
+        <div class="form-group">
+          <label for="city">Ciudad:</label>
+          <input type="text" id="city" required>
+        </div>
+        <div class="form-group">
+          <label for="team">Equipo:</label>
+          <input type="text" id="team">
+        </div>
+        <div class="form-group">
+          <label for="health">Salud:</label>
+          <input type="number" id="health" min="1" max="1000" value="100">
+        </div>
+        <div class="form-group">
+          <label for="attack">Ataque:</label>
+          <input type="number" id="attack" min="1" max="200" value="50">
+        </div>
+        <div class="form-group">
+          <label for="defense">Defensa:</label>
+          <input type="number" id="defense" min="0" max="200" value="30">
+        </div>
+        <div class="form-group">
+          <label for="specialAbility">Habilidad Especial:</label>
+          <input type="text" id="specialAbility" value="Basic Attack">
+        </div>
+        <div class="form-group">
+          <label for="speed">Velocidad:</label>
+          <input type="number" id="speed" min="1" max="200" value="50">
+        </div>
+        <div class="form-group">
+          <label for="critChance">Probabilidad de Crítico (%):</label>
+          <input type="number" id="critChance" min="0" max="100" value="10">
+        </div>
+        <!-- Campos opcionales adicionales -->
+        <div class="form-group">
+          <label for="isAlive">Está vivo:</label>
+          <select id="isAlive">
+            <option value="true" selected>Sí</option>
+            <option value="false">No</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="roundsWon">Rondas Ganadas:</label>
+          <input type="number" id="roundsWon" min="0" value="0">
+        </div>
+        <div class="form-group">
+          <label for="damage">Daño:</label>
+          <input type="number" id="damage" min="0" value="0">
+        </div>
+        <div class="form-group">
+          <label for="status">Estado:</label>
+          <select id="status">
+            <option value="normal" selected>normal</option>
+            <option value="congelado">congelado</option>
+            <option value="envenenado">envenenado</option>
+            <option value="fortalecido">fortalecido</option>
+            <option value="debilitado">debilitado</option>
+            <option value="paralizado">paralizado</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="stamina">Stamina:</label>
+          <input type="number" id="stamina" min="0" value="100">
+        </div>
+        <div class="form-group">
+          <label for="teamAffinity">Afinidad de Equipo:</label>
+          <input type="number" id="teamAffinity" min="-100" max="100" value="0">
+        </div>
+        <div class="form-group">
+          <label for="energyCost">Costo de Energía:</label>
+          <input type="number" id="energyCost" min="0" max="100" value="0">
+        </div>
+        <div class="form-group">
+          <label for="damageReduction">Reducción de Daño (%):</label>
+          <input type="number" id="damageReduction" min="0" max="100" value="0">
+        </div>
+        <button type="submit">Crear Villano</button>
+      </form>
+    </div>
+    
+    <div id="editVillain" class="hidden">
+      <h2>Editar Villano</h2>
+      <form id="editVillainForm">
+        <input type="hidden" id="editVillainId">
+        <div class="form-group">
+          <label for="editName">Nombre:</label>
+          <input type="text" id="editName" required>
+        </div>
+        <div class="form-group">
+          <label for="editAlias">Alias:</label>
+          <input type="text" id="editAlias" required>
+        </div>
+        <div class="form-group">
+          <label for="editCity">Ciudad:</label>
+          <input type="text" id="editCity" required>
+        </div>
+        <div class="form-group">
+          <label for="editTeam">Equipo:</label>
+          <input type="text" id="editTeam">
+        </div>
+        <div class="form-group">
+          <label for="editHealth">Salud:</label>
+          <input type="number" id="editHealth" min="1" max="1000">
+        </div>
+        <div class="form-group">
+          <label for="editAttack">Ataque:</label>
+          <input type="number" id="editAttack" min="1" max="200">
+        </div>
+        <div class="form-group">
+          <label for="editDefense">Defensa:</label>
+          <input type="number" id="editDefense" min="0" max="200">
+        </div>
+        <div class="form-group">
+          <label for="editSpecialAbility">Habilidad Especial:</label>
+          <input type="text" id="editSpecialAbility">
+        </div>
+        <div class="form-group">
+          <label for="editSpeed">Velocidad:</label>
+          <input type="number" id="editSpeed" min="1" max="200">
+        </div>
+        <div class="form-group">
+          <label for="editCritChance">Probabilidad de Crítico (%):</label>
+          <input type="number" id="editCritChance" min="0" max="100">
+        </div>
+        <div class="actions">
+          <button type="submit">Guardar Cambios</button>
+          <button type="button" id="cancelEdit">Cancelar</button>
+        </div>
+      </form>
+    </div>
+    
+    <footer class="swagger-section" style="margin-top: 60px; padding: 30px 20px; background: linear-gradient(145deg, #ffe6e6, #ffcccc); border-top: 3px solid #ff1a1a; border-radius: 12px;">
+      <div class="swagger-header" style="text-align: center; margin-bottom: 30px;">
+        <h3>🦹‍♂️ Endpoints API de Villanos</h3>
+        <p>Prueba directamente los endpoints desde aquí:</p>
+      </div>
+      <section class="section" aria-labelledby="api-doc-title">
+        <div id="swagger-ui" style="max-height: 600px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 8px; background: white;"></div>
+      </section>
+    </footer>
+    
+    <!-- Swagger UI embebido -->
+    <script src="/swagger-custom/swagger-ui-bundle.js"></script>
+    <script src="/swagger-custom/swagger-ui-standalone-preset.js"></script>
+    <script src="swagger-app.js"></script>
+    
+    <script src="main.js"></script>
+  </main>
+</body>
+</html>

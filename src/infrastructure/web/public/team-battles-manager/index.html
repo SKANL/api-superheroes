@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Team Battles Manager</title>
+  <link rel="stylesheet" href="/swagger-custom/swagger-ui.css"/>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; }
+    .hidden { display: none; }
+    .container { max-width: 800px; margin: 0 auto; }
+    
+    header { 
+      background: #f0f9eb; 
+      padding: 15px 20px; 
+      border-radius: 8px; 
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    
+    .tab-buttons { 
+      display: flex; 
+      margin-bottom: 20px; 
+      border-bottom: 1px solid #ddd;
+    }
+    
+    .tab-button { 
+      padding: 10px 20px; 
+      background-color: #f0f0f0; 
+      border: 1px solid #ddd; 
+      border-bottom: none; 
+      border-radius: 5px 5px 0 0;
+      cursor: pointer;
+    }
+    
+    .tab-button.active { 
+      background-color: #fff;
+      border-bottom: 2px solid #52c41a;
+      font-weight: bold;
+    }
+    
+    /* Team battle specific styles */
+    .battle-card { 
+      border: 1px solid #ddd; 
+      border-radius: 8px; 
+      padding: 15px; 
+      margin: 10px 0; 
+      background-color: #f9f9f9;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    
+    .battle-card.heroes-winning { 
+      background-color: #e6f7ff; 
+      border-color: #1890ff;
+    }
+    
+    .battle-card.villains-winning { 
+      background-color: #ffe6e6; 
+      border-color: #ff1a1a;
+    }
+    
+    .battle-card.draw { 
+      background-color: #f0f0f0; 
+      border-color: #666;
+    }
+    
+    .battle-card.ongoing { 
+      background-color: #f0f9eb; 
+      border-color: #52c41a;
+    }
+    
+    .battle-step-card {
+      border: 1px solid #e8e8e8;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 10px 0;
+      background-color: #fff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    
+    .character-select {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .character-select > div {
+      flex: 1;
+      padding: 15px;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+    }
+    
+    .heroes-side { 
+      border: 1px solid #1890ff; 
+      background-color: #e6f7ff;
+    }
+    
+    .villains-side { 
+      border: 1px solid #ff1a1a; 
+      background-color: #ffe6e6;
+    }
+    
+    .character-list {
+      max-height: 300px;
+      overflow-y: auto;
+      padding: 10px 0;
+    }
+    
+    .character { 
+      display: block;
+      padding: 8px;
+      margin: 5px 0;
+      border-radius: 4px;
+      background-color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .character:hover {
+      background-color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .team-selection {
+      background-color: #f0f9eb;
+      border: 1px solid #b7eb8f;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .battle-progress {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    
+    .battle-teams {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    
+    .team-column {
+      width: 48%;
+      padding: 15px;
+      border-radius: 8px;
+    }
+    
+    .heroes-team {
+      background-color: #e6f7ff;
+      border: 1px solid #1890ff;
+    }
+    
+    .villains-team {
+      background-color: #ffe6e6;
+      border: 1px solid #ff1a1a;
+    }
+    
+    .character-stats {
+      padding: 8px;
+      margin: 5px 0;
+      border-radius: 4px;
+      background-color: rgba(255, 255, 255, 0.7);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .character-stats.defeated {
+      opacity: 0.6;
+      text-decoration: line-through;
+    }
+    
+    .hp-bar {
+      height: 10px;
+      width: 100%;
+      background-color: #f5f5f5;
+      border-radius: 5px;
+      margin-top: 5px;
+      overflow: hidden;
+    }
+    
+    .hp-fill {
+      height: 100%;
+      background-color: #52c41a;
+      transition: width 0.3s ease;
+    }
+    
+    .actions-panel {
+      background-color: #fafafa;
+      border: 1px solid #d9d9d9;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 20px 0;
+    }
+    
+    .action-form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      align-items: end;
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    
+    .form-group select, .form-group input {
+      width: 100%;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #d9d9d9;
+    }
+    
+    .side-selector {
+      display: flex;
+      justify-content: center;
+      margin: 20px 0;
+    }
+    
+    .side-option {
+      padding: 20px 30px;
+      margin: 0 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+    
+    .side-option.heroes {
+      background-color: #e6f7ff;
+      border: 2px solid transparent;
+    }
+    
+    .side-option.heroes:hover, .side-option.heroes.selected {
+      border-color: #1890ff;
+      box-shadow: 0 0 10px rgba(24, 144, 255, 0.3);
+    }
+    
+    .side-option.villains {
+      background-color: #ffe6e6;
+      border: 2px solid transparent;
+    }
+    
+    .side-option.villains:hover, .side-option.villains.selected {
+      border-color: #ff1a1a;
+      box-shadow: 0 0 10px rgba(255, 26, 26, 0.3);
+    }
+    
+    .battle-messages {
+      max-height: 300px;
+      overflow-y: auto;
+      padding: 10px;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      margin-top: 20px;
+    }
+    
+    .message {
+      padding: 8px;
+      margin: 5px 0;
+      border-radius: 4px;
+      background-color: #f9f9f9;
+    }
+    
+    .message.attack {
+      background-color: #fff2e8;
+      border-left: 4px solid #fa8c16;
+    }
+    
+    .message.special {
+      background-color: #fff0f6;
+      border-left: 4px solid #eb2f96;
+    }
+    
+    .message.system {
+      background-color: #f0f9eb;
+      border-left: 4px solid #52c41a;
+    }
+    
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background-color 0.2s ease;
+    }
+    
+    .btn-primary {
+      background-color: #52c41a;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: #389e0d;
+    }
+    
+    .btn-primary:disabled {
+      background-color: #d9d9d9;
+      cursor: not-allowed;
+    }
+    
+    .btn-danger {
+      background-color: #ff4d4f;
+      color: white;
+    }
+    
+    .btn-danger:hover {
+      background-color: #cf1322;
+    }
+    
+    .step-title {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .step-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: #52c41a;
+      color: white;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+    
+    .battle-results {
+      text-align: center;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      background-color: #f0f9eb;
+      border: 1px solid #b7eb8f;
+    }
+    
+    .result-title {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+    
+    .result-stats {
+      margin-top: 20px;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1 id="main-title" tabindex="0">Team Battles Manager</h1>
+      <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+        <a href="/dashboard" style="text-decoration: none; color: #52c41a;">← Volver al Panel de Control</a>
+        <a href="/api/docs/team-battles" target="_blank" style="text-decoration: none; background-color: #52c41a; color: white; padding: 8px 16px; border-radius: 4px;">
+          Ver API Docs
+        </a>
+      </div>
+    </header>
+    
+    <div class="tab-buttons">
+      <div id="viewTab" class="tab-button">Ver Batallas</div>
+      <div id="createTab" class="tab-button active">Crear Batalla</div>
+    </div>
+    
+    <div id="viewBattles" class="hidden">
+      <div class="filters">
+        <label for="heroFilter">Filtrar por Héroe:</label>
+        <select id="heroFilter">
+          <option value="">Todos los héroes</option>
+        </select>
+        
+        <label for="villainFilter">Filtrar por Villano:</label>
+        <select id="villainFilter">
+          <option value="">Todos los villanos</option>
+        </select>
+        
+        <label for="statusFilter">Filtrar por Estado:</label>
+        <select id="statusFilter">
+          <option value="">Todos los estados</option>
+          <option value="ongoing">En progreso</option>
+          <option value="finished">Finalizadas</option>
+        </select>
+      </div>
+      
+      <div id="teamBattlesList"></div>
+    </div>
+    
+    <div id="createBattle">
+      <div class="battle-step-card" id="setup">
+        <div class="step-title">
+          <div class="step-number">1</div>
+          <h2>Selecciona tu bando</h2>
+        </div>
+        <p>Elige el equipo que quieres controlar durante la batalla:</p>
+        
+        <div class="side-selector">
+          <div class="side-option heroes" data-side="heroes">
+            <h3>Héroes</h3>
+            <p>Lucha por la justicia y defiende la ciudad</p>
+          </div>
+          
+          <div class="side-option villains" data-side="villains">
+            <h3>Villanos</h3>
+            <p>Impón el caos y conquista la ciudad</p>
+          </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px;">
+          <button id="sideBtn" class="btn btn-primary">Continuar</button>
+        </div>
+      </div>
+      
+      <div class="battle-step-card hidden" id="selectors">
+        <div class="step-title">
+          <div class="step-number">2</div>
+          <h2>Selecciona personajes</h2>
+        </div>
+        
+        <div class="character-select">
+          <div id="userTeam">
+            <h3>Tu equipo (<span id="sideLabel"></span>)</h3>
+            <p>Selecciona los personajes para tu equipo:</p>
+            <div id="userList" class="character-list"></div>
+          </div>
+          
+          <div id="opponentTeam">
+            <h3>Equipo oponente</h3>
+            <p>Selecciona los personajes para el equipo contrario:</p>
+            <div id="opponentList" class="character-list"></div>
+          </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px;">
+          <button id="startBtn" class="btn btn-primary">Iniciar Batalla</button>
+        </div>
+      </div>
+      
+      <div class="battle-progress hidden" id="battle">
+        <div class="step-title">
+          <div class="step-number">3</div>
+          <h2>Batalla en progreso</h2>
+        </div>
+        
+        <div class="battle-teams">
+          <div class="team-column heroes-team">
+            <h3>Equipo de Héroes</h3>
+            <div id="heroesTeamStats"></div>
+          </div>
+          
+          <div class="team-column villains-team">
+            <h3>Equipo de Villanos</h3>
+            <div id="villainsTeamStats"></div>
+          </div>
+        </div>
+        
+        <div class="actions-panel">
+          <h3>Realizar acción</h3>
+          <div class="action-form">
+            <div class="form-group">
+              <label for="attackerSelect">Atacante:</label>
+              <select id="attackerSelect"></select>
+            </div>
+            
+            <div class="form-group">
+              <label for="targetSelect">Objetivo:</label>
+              <select id="targetSelect"></select>
+            </div>
+            
+            <div class="form-group">
+              <label for="attackType">Tipo de Ataque:</label>
+              <select id="attackType">
+                <option value="normal">Normal</option>
+                <option value="special">Especial</option>
+              </select>
+            </div>
+            
+            <button id="attackBtn" class="btn btn-primary">Atacar</button>
+          </div>
+        </div>
+        
+        <div class="battle-messages" id="messages"></div>
+        
+        <div style="text-align: center; margin-top: 20px;">
+          <button id="finishBtn" class="btn btn-danger hidden">Finalizar Batalla</button>
+        </div>
+      </div>
+      
+      <div class="battle-results hidden" id="results">
+        <div class="step-title">
+          <div class="step-number">4</div>
+          <h2>Resultados de la batalla</h2>
+        </div>
+        
+        <div class="result-title" id="resultTitle">¡Victoria de los Héroes!</div>
+        <div class="result-stats" id="resultStats"></div>
+        
+        <div style="text-align: center; margin-top: 20px;">
+          <button id="newBattleBtn" class="btn btn-primary">Nueva Batalla</button>
+        </div>
+      </div>
+    </div>
+    
+    <footer style="margin-top: 60px; padding: 30px 20px; background: linear-gradient(145deg, #f0f9eb, #d9f7be); border-top: 3px solid #52c41a; border-radius: 12px;">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <h3>🛡️ Endpoints API de Batallas de Equipo</h3>
+        <p>Prueba directamente los endpoints desde aquí:</p>
+      </div>
+      <section class="section" aria-labelledby="api-doc-title">
+        <div id="swagger-ui" style="max-height: 600px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 8px; background: white;"></div>
+      </section>
+    </footer>
+    
+    <!-- Swagger UI embebido -->
+    <script src="/swagger-custom/swagger-ui-bundle.js"></script>
+    <script src="/swagger-custom/swagger-ui-standalone-preset.js"></script>
+    <script src="swagger-app.js"></script>
+    
+    <script src="main.js"></script>
+  </main>
+</body>
+</html>

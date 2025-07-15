@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Battles Manager</title>
+  <link rel="stylesheet" href="/swagger-custom/swagger-ui.css"/>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .hidden { display: none; }
+    .battle-card { 
+      border: 1px solid #ddd; 
+      border-radius: 8px; 
+      padding: 15px; 
+      margin: 10px 0; 
+      background-color: #f9f9f9;
+    }
+    .battle-card.hero-winner { 
+      background-color: #e6f7ff; 
+      border-color: #1890ff;
+    }
+    .battle-card.villain-winner { 
+      background-color: #ffe6e6; 
+      border-color: #ff1a1a;
+    }
+    .battle-card.draw { 
+      background-color: #f0f0f0; 
+      border-color: #666;
+    }
+    .battle-card.ongoing { 
+      background-color: #fffbe6; 
+      border-color: #faad14;
+    }
+    .participants { margin-top: 10px; }
+    .battle-details { margin-top: 15px; }
+    .container { max-width: 800px; margin: 0 auto; }
+    header { background: #fffbe6; padding: 10px 20px; border-radius: 8px; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; }
+    .form-group select, .form-group input { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd; }
+    button { 
+      padding: 8px 16px; 
+      background-color: #faad14; 
+      color: white; 
+      border: none; 
+      border-radius: 4px; 
+      cursor: pointer; 
+    }
+    button:hover { background-color: #d48806; }
+    button:disabled { background-color: #d9d9d9; cursor: not-allowed; }
+    .actions { margin-top: 20px; display: flex; gap: 10px; }
+    .tab-buttons { display: flex; margin-bottom: 20px; }
+    .tab-button { 
+      padding: 10px 20px; 
+      background-color: #f0f0f0; 
+      border: 1px solid #ddd; 
+      border-bottom: none; 
+      border-radius: 5px 5px 0 0;
+      cursor: pointer;
+    }
+    .tab-button.active { 
+      background-color: #fff;
+      border-bottom: 2px solid #faad14;
+      font-weight: bold;
+    }
+    .filters {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .filters select {
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+    }
+    .hero-data, .villain-data {
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 4px;
+    }
+    .hero-data {
+      background-color: #e6f7ff;
+    }
+    .villain-data {
+      background-color: #ffe6e6;
+    }
+    .winner {
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+    .result {
+      font-size: 1.2em;
+      margin-top: 10px;
+      padding: 5px;
+      border-radius: 4px;
+      text-align: center;
+    }
+    .result.hero-win {
+      background-color: #e6f7ff;
+      color: #1890ff;
+    }
+    .result.villain-win {
+      background-color: #ffe6e6;
+      color: #ff1a1a;
+    }
+    .result.draw {
+      background-color: #f0f0f0;
+      color: #666;
+    }
+    .character-select {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .character-select > div {
+      width: 48%;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1 id="main-title" tabindex="0">Battles Manager</h1>
+      <div style="margin-top: 10px;">
+        <a href="/dashboard" style="text-decoration: none; color: #faad14;">← Volver al Panel de Control</a>
+      </div>
+    </header>
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+      <div class="tab-buttons">
+        <div id="viewTab" class="tab-button active">Ver Batallas</div>
+        <div id="createTab" class="tab-button">Crear Batalla</div>
+      </div>
+      <a href="/api/docs/battles" target="_blank" style="text-decoration: none; background-color: #faad14; color: white; padding: 8px 16px; border-radius: 4px;">
+        Ver API Docs
+      </a>
+    </div>
+    
+    <div id="viewBattles">
+      <div class="filters">
+        <label for="heroFilter">Filtrar por Héroe:</label>
+        <select id="heroFilter">
+          <option value="">Todos los héroes</option>
+        </select>
+        
+        <label for="villainFilter">Filtrar por Villano:</label>
+        <select id="villainFilter">
+          <option value="">Todos los villanos</option>
+        </select>
+        
+        <label for="resultFilter">Filtrar por Resultado:</label>
+        <select id="resultFilter">
+          <option value="">Todos los resultados</option>
+          <option value="hero_winner">Victoria Héroe</option>
+          <option value="villain_winner">Victoria Villano</option>
+          <option value="draw">Empate</option>
+        </select>
+      </div>
+      
+      <div id="battlesList"></div>
+    </div>
+    
+    <div id="createBattle" class="hidden">
+      <h2>Crear Nueva Batalla</h2>
+      
+      <div class="character-select">
+        <div>
+          <h3>Héroe</h3>
+          <div class="form-group">
+            <label for="heroSelect">Seleccionar Héroe:</label>
+            <select id="heroSelect" required>
+              <option value="">Selecciona un héroe</option>
+            </select>
+          </div>
+        </div>
+        
+        <div>
+          <h3>Villano</h3>
+          <div class="form-group">
+            <label for="villainSelect">Seleccionar Villano:</label>
+            <select id="villainSelect" required>
+              <option value="">Selecciona un villano</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="locationInput">Ubicación:</label>
+        <input type="text" id="locationInput" placeholder="Ej: Ciudad Gótica">
+      </div>
+      
+      <button id="createBattleBtn">Crear Batalla</button>
+    </div>
+    
+    <div id="battleDetail" class="hidden">
+      <h2>Detalles de la Batalla</h2>
+      <div id="battleInfo"></div>
+      <button id="backToListBtn">Volver a la Lista</button>
+    </div>
+    
+    <footer class="swagger-section" style="margin-top: 60px; padding: 30px 20px; background: linear-gradient(145deg, #fffbe6, #fff7cc); border-top: 3px solid #faad14; border-radius: 12px;">
+      <div class="swagger-header" style="text-align: center; margin-bottom: 30px;">
+        <h3>⚔️ Endpoints API de Batallas</h3>
+        <p>Prueba directamente los endpoints desde aquí:</p>
+      </div>
+      <section class="section" aria-labelledby="api-doc-title">
+        <div id="swagger-ui" style="max-height: 600px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 8px; background: white;"></div>
+      </section>
+    </footer>
+    
+    <!-- Swagger UI embebido -->
+    <script src="/swagger-custom/swagger-ui-bundle.js"></script>
+    <script src="/swagger-custom/swagger-ui-standalone-preset.js"></script>
+    <script src="swagger-app.js"></script>
+    
+    <script src="main.js"></script>
+  </main>
+</body>
+</html>

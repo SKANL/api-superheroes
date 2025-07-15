@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TeamBattle Manager</title>
+    <meta name="description" content="Interfaz accesible para gestionar batallas entre equipos de héroes y villanos. Selecciona participantes, ejecuta rondas y consulta resultados fácilmente." />
+    <link rel="stylesheet" href="/swagger-custom/swagger-ui.css" />
+    <link rel="stylesheet" href="/swagger-custom/custom-style.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header>
+        <h1 id="main-title" tabindex="0">TeamBattle Manager</h1>
+      </header>
+      <nav aria-label="Pasos para gestionar una batalla">
+        <ol>
+          <li><strong>Selecciona al menos un héroe y un villano</strong> usando las listas. Usa Ctrl (Windows) o Cmd (Mac) para seleccionar varios.</li>
+          <li>Haz clic en <strong>Iniciar Batalla</strong>.</li>
+          <li>En la siguiente sección, asigna acciones y objetivos para cada personaje y ejecuta la ronda.</li>
+          <li>Consulta los resultados y repite rondas si es necesario.</li>
+        </ol>
+      </nav>
+
+      <!-- NUEVO: Selección de bando y personajes -->
+      <section class="section main-card" id="side-selection-section" aria-labelledby="side-selection-title">
+        <h2 id="side-selection-title">Selecciona tu bando</h2>
+        <p>Elige si quieres ser héroe o villano para esta batalla.</p>
+        <div id="side-selector" class="side-selector">
+          <!-- Los radios se generarán dinámicamente -->
+        </div>
+      </section>
+      <section class="section main-card hidden" id="character-selection-section" aria-labelledby="character-selection-title">
+        <h2 id="character-selection-title">Selecciona tus personajes</h2>
+        <p>Elige los personajes que deseas usar en la batalla.</p>
+        <div id="character-selection" class="character-selection">
+          <!-- Los checkboxes se generarán dinámicamente -->
+        </div>
+      </section>
+      <section class="section main-card hidden" id="battle-section" aria-labelledby="battle-title">
+        <h2 id="battle-title">Batalla</h2>
+        <p>Usa los botones de acción para atacar o usar habilidades especiales.</p>
+        <div id="battle-arena" class="battle-arena">
+          <div id="heroes-buttons" class="character-buttons">
+            <h3>Héroes</h3>
+            <!-- Los botones se generarán dinámicamente -->
+          </div>
+          <div id="villains-buttons" class="character-buttons">
+            <h3>Villanos</h3>
+            <!-- Los botones se generarán dinámicamente -->
+          </div>
+        </div>
+        <div id="attack-log" class="attack-log"></div>
+        <div id="battle-result" class="battle-result"></div>
+      </section>
+      <section class="section main-card" id="create-section" aria-labelledby="create-title">
+        <h2 id="create-title">Crear una nueva batalla</h2>
+        <p id="create-desc">Para iniciar una batalla, selecciona los <strong>héroes</strong> y <strong>villanos</strong> participantes. Debes elegir al menos uno de cada grupo.</p>
+        <form aria-describedby="create-desc" autocomplete="off">
+         <div class="form-group">
+           <div class="form-label-row">
+             <label for="battle-mode-select">Modo de batalla</label>
+             <span aria-label="requerido" class="required">*</span>
+           </div>
+           <select id="battle-mode-select" name="mode" class="full-width-select" aria-required="true">
+             <option value="manual">Manual (turno por turno)</option>
+             <option value="auto">Automático (simulación completa)</option>
+           </select>
+           <span class="form-hint">Elige si quieres controlar cada ataque o simular la batalla completa automáticamente.</span>
+         </div>
+          <div class="form-group">
+            <div class="form-label-row">
+              <label for="heroes-select">Selecciona Héroes</label>
+              <span aria-label="requerido" class="required">*</span>
+            </div>
+            <span class="sr-only" id="heroes-instructions">Usa las flechas para navegar y Ctrl o Cmd para seleccionar varios. Debes elegir al menos un héroe.</span>
+            <select id="heroes-select" name="heroes" multiple size="4" aria-describedby="heroes-help heroes-instructions" aria-required="true" class="full-width-select"></select>
+            <span id="heroes-help" class="form-hint">Mantén presionada Ctrl (Windows) o Cmd (Mac) para seleccionar varios. Mínimo 1 héroe.</span>
+          </div>
+          <div class="form-group">
+            <div class="form-label-row">
+              <label for="villains-select">Selecciona Villanos</label>
+              <span aria-label="requerido" class="required">*</span>
+            </div>
+            <span class="sr-only" id="villains-instructions">Usa las flechas para navegar y Ctrl o Cmd para seleccionar varios. Debes elegir al menos un villano.</span>
+            <select id="villains-select" name="villains" multiple size="4" aria-describedby="villains-help villains-instructions" aria-required="true" class="full-width-select"></select>
+            <span id="villains-help" class="form-hint">Mantén presionada Ctrl (Windows) o Cmd (Mac) para seleccionar varios. Mínimo 1 villano.</span>
+          </div>
+          <div class="form-actions">
+            <button id="create-btn" type="button" aria-describedby="create-desc" aria-label="Iniciar batalla con los personajes seleccionados">Iniciar Batalla</button>
+          </div>
+          <div class="mt-10 text-secondary">
+            <strong>¿Dónde encuentro los IDs?</strong> Consulta la sección "Listar héroes" y "Listar villanos" en la API para obtener los IDs disponibles.
+          </div>
+          <div id="create-error" class="error-message hidden" role="alert" aria-live="assertive"></div>
+        </form>
+      </section>
+      <section class="section hidden" id="status-section" aria-labelledby="status-title">
+        <h2 id="status-title">Estado de la Batalla</h2>
+        <p>Aquí puedes ver el estado actual de la batalla, incluyendo los equipos, el progreso y el historial de rondas.</p>
+        <div id="battle-info" class="info-box" tabindex="0" aria-live="polite"></div>
+      </section>
+      <section class="section hidden" id="round-section" aria-labelledby="round-title">
+        <h2 id="round-title">Ejecutar Ronda</h2>
+        <p id="round-desc">Selecciona la acción (<strong>normal</strong> o <strong>special</strong>) para cada héroe y villano, y especifica el <strong>ID del objetivo</strong> (target) al que atacará.<br>
+        <span class="text-secondary">Ejemplo: El héroe <code>h1</code> puede atacar al villano <code>v2</code>, así que en "targetId" escribe <code>v2</code>.</span></p>
+        <div id="actions-form" aria-describedby="round-desc"></div>
+        <button id="round-btn" type="button" class="mt-10" aria-label="Ejecutar ronda con las acciones seleccionadas">Ejecutar Ronda</button>
+        <div class="mt-10 text-secondary">
+          <strong>¿Qué es "targetId"?</strong> Es el ID del personaje al que se dirige la acción. Debe ser un ID válido del equipo contrario.
+        </div>
+        <div id="round-error" class="error-message hidden" role="alert" aria-live="assertive"></div>
+      </section>
+      <section class="section hidden" id="results-section" aria-labelledby="results-title">
+        <h2 id="results-title">Resultados</h2>
+        <p>Consulta aquí el historial de rondas y el resultado final de la batalla.</p>
+        <aside class="form-group" aria-label="Opciones de visualización de resultados">
+          <label for="view-mode-select"><strong>Ver resultados como:</strong></label>
+          <select id="view-mode-select" aria-describedby="view-mode-help">
+            <option value="json">JSON crudo</option>
+            <option value="table">Tabla</option>
+            <option value="cards">Tarjetas</option>
+            <option value="summary">Resumen textual</option>
+            <option value="timeline">Timeline</option>
+            <option value="alerts">Alertas/Badges</option>
+            <option value="collapsible">Colapsables</option>
+          </select>
+          <span id="view-mode-help" class="form-hint">Elige cómo prefieres visualizar la información de la batalla.</span>
+        </aside>
+        <div id="results-container" tabindex="0" aria-live="polite"></div>
+      </section>
+      <hr />
+      <section class="section" aria-labelledby="api-doc-title">
+        <h2 id="api-doc-title">API Documentation</h2>
+        <div id="swagger-ui"></div>
+      </section>
+    </main>
+    <script src="/swagger-custom/swagger-ui-bundle.js"></script>
+    <script src="/swagger-custom/swagger-ui-standalone-preset.js"></script>
+    <script src="/swagger-custom/app.js"></script>
+    <script src="/swagger-custom/custom-accessibility.js"></script>
+    <script src="/swagger-custom/results-panel.js"></script>
+    <script src="/swagger-custom/game-ui.js"></script>
+  </body>
+</html>
