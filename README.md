@@ -2,6 +2,20 @@
 
 Implementación de una API REST de Superhéroes y Villanos siguiendo Clean Architecture (Onion Architecture) en Node.js/Express.
 
+## Tabla de Contenidos
+
+- [Estructura](#estructura)
+- [Funcionalidades](#funcionalidades)
+- [Instalación](#instalación)
+- [Scripts útiles](#scripts-útiles)
+- [Validación de estructura](#validación-de-estructura)
+- [Documentación](#documentación)
+- [Estructura del Proyecto](#estructura-del-proyecto)
+- [Limpieza del Proyecto](#limpieza-del-proyecto)
+- [Casos de Uso](#casos-de-uso)
+- [Contribuciones](#contribuciones)
+- [Licencia](#licencia)
+
 ## Estructura
 
 - `src/domain`: Entidades (Héroe, Villano, Batalla), servicios de dominio (BattleService)
@@ -38,7 +52,10 @@ npm test
 
 ## Documentación
 
-Ver `/docs` y `/api/docs` (Swagger)
+La documentación de la API está disponible en los siguientes directorios:
+
+- `/docs`: Documentación generada automáticamente.
+- `/api/docs`: Documentación Swagger para la API.
 
 ## Estructura del Proyecto
 
@@ -67,12 +84,16 @@ Este comando eliminará directorios como `coverage/`, `lcov-report/`, `docs/gene
 
 Los casos de uso implementados en el proyecto son:
 
+### Héroes
+
 - `CreateHeroUseCase`: Crear un nuevo héroe.
 - `GetHeroUseCase`: Obtener un héroe por ID.
 - `ListHeroesUseCase`: Listar todos los héroes.
 - `FindHeroesByCityUseCase`: Buscar héroes por ciudad.
 - `UpdateHeroUseCase`: Actualizar un héroe existente.
 - `DeleteHeroUseCase`: Eliminar un héroe por ID.
+
+### Villanos
 
 - `CreateVillainUseCase`: Crear un nuevo villano.
 - `GetVillainUseCase`: Obtener un villano por ID.
@@ -81,8 +102,24 @@ Los casos de uso implementados en el proyecto son:
 - `UpdateVillainUseCase`: Actualizar un villano existente.
 - `DeleteVillainUseCase`: Eliminar un villano por ID.
 
+### Batallas
+
 - `CreateBattleUseCase`: Registrar una nueva batalla entre un héroe y un villano.
 - `GetBattleUseCase`: Obtener una batalla por ID.
 - `ListBattlesUseCase`: Listar todas las batallas.
 - `ListBattlesByHeroUseCase`: Listar batallas por héroe.
 - `ListBattlesByVillainUseCase`: Listar batallas por villano.
+
+## Contribuciones
+
+¡Las contribuciones son bienvenidas! Por favor, sigue los pasos a continuación:
+
+1. Haz un fork del repositorio.
+2. Crea una rama para tu funcionalidad o corrección de errores (`git checkout -b feature/nueva-funcionalidad`).
+3. Realiza tus cambios y haz un commit (`git commit -m 'Agrega nueva funcionalidad'`).
+4. Sube tus cambios a tu fork (`git push origin feature/nueva-funcionalidad`).
+5. Abre un Pull Request en este repositorio.
+
+## Licencia
+
+Este proyecto está licenciado bajo la Licencia MIT. Consulta el archivo `LICENSE` para más detalles.

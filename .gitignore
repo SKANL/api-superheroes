@@ -136,10 +136,47 @@ ssl/*.pem
 ssl/*.key
 !ssl/README.md
 # Exclude IDE-specific files
-.vscode/
 .idea/
-*.swp
-*.swo
+.vscode/
+.sublime-project
+.sublime-workspace
 # Exclude OS-specific files
 .DS_Store
 Thumbs.db
+# Exclude additional temporary and build files
+*.bak
+*.tmp
+*.log.*
+*.cache
+*.swp
+*.swo
+# Exclude test result files
+*.test-results.xml
+*.test-results.json
+# Exclude build artifacts
+build/
+dist/
+# Exclude Swagger UI generated files
+swagger-ui/
+# Exclude temporary files created by npm or yarn
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+# Exclude temporary files created by IDEs
+*.iml
+*.ipr
+*.iws
+# Exclude temporary files created by testing tools
+.coverage
+.lcov
+# Exclude temporary files created by bundlers
+.parcel-cache
+.cache
+# Exclude temporary files created by Docker
+.dockerignore
+Dockerfile
+# Exclude temporary files created by CI/CD tools
+.circleci/
+.gitlab-ci.yml
+# Exclude temporary files created by deployment tools
+.deploy/
