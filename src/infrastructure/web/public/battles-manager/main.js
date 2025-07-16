@@ -12,9 +12,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const resultFilter = document.getElementById('resultFilter');
   const heroSelect = document.getElementById('heroSelect');
   const villainSelect = document.getElementById('villainSelect');
-  const locationInput = document.getElementById('locationInput');
+  const locationSelect = document.getElementById('locationSelect');
   const createBattleBtn = document.getElementById('createBattleBtn');
   const backToListBtn = document.getElementById('backToListBtn');
+  // Controles de ataque manual
+  const attackTypeSelect = document.getElementById('attackTypeSelect');
+  const attackBtn = document.getElementById('attackBtn');
+  const finishBtn = document.getElementById('finishBtn');
+  const toggleHistoryBtn = document.getElementById('toggleHistoryBtn');
+  const messagesDiv = document.getElementById('messages');
+  const battleHistory = document.getElementById('battleHistory');
+  let currentBattle = null;
+  let historyVisible = false;
   
   let battles = [];
   let heroes = [];
@@ -30,13 +39,14 @@ document.addEventListener('DOMContentLoaded', () => {
     loadBattles();
   });
   
-  createTab.addEventListener('click', () => {
+  createTab.addEventListener('click', async () => {
     viewBattlesDiv.classList.add('hidden');
     createBattleDiv.classList.remove('hidden');
     battleDetailDiv.classList.add('hidden');
     viewTab.classList.remove('active');
     createTab.classList.add('active');
-    loadHeroesAndVillains();
+    await loadHeroesAndVillains();
+    await loadLocations();
   });
   
   // Volver a la lista desde detalles
@@ -55,6 +65,42 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Crear batalla
   createBattleBtn.addEventListener('click', createBattle);
+  
+  // Ataque
+  attackBtn.addEventListener('click', async () => {
+    try {
+      await fetch(`/api/battles/${currentBattle.id}/attack`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ attackType: attackTypeSelect.value })
+      });
+      await viewBattleDetails(currentBattle.id);
+    } catch (err) {
+      console.error('Error durante el ataque manual:', err);
+      alert('Error durante el ataque.');
+    }
+  });
+  // Finalizar batalla manual
+  finishBtn.addEventListener('click', async () => {
+    try {
+      await fetch(`/api/battles/${currentBattle.id}/finish`, { method: 'POST' });
+      await viewBattleDetails(currentBattle.id);
+    } catch (err) {
+      console.error('Error finalizando batalla manual:', err);
+      alert('Error al finalizar la batalla.');
+    }
+  });
+  // Toggle historial
+  toggleHistoryBtn.addEventListener('click', () => {
+    historyVisible = !historyVisible;
+    if (historyVisible) {
+      battleHistory.classList.remove('hidden');
+      toggleHistoryBtn.textContent = 'Ocultar Historial';
+    } else {
+      battleHistory.classList.add('hidden');
+      toggleHistoryBtn.textContent = 'Ver Historial de Batalla';
+    }
+  });
   
   // Funciones
   async function loadBattles() {
@@ -101,6 +147,23 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (error) {
       console.error('Error cargando personajes:', error);
       alert('Error al cargar héroes y villanos. Intenta de nuevo más tarde.');
+    }
+  }
+  
+  // Cargar ubicaciones disponibles
+  async function loadLocations() {
+    try {
+      const response = await fetch('/api/cities');
+      const cities = await response.json();
+      locationSelect.innerHTML = '<option value="">Selecciona una ubicación</option>';
+      cities.forEach(city => {
+        const option = document.createElement('option');
+        option.value = city;
+        option.textContent = city;
+        locationSelect.appendChild(option);
+      });
+    } catch (error) {
+      console.error('Error cargando ubicaciones:', error);
     }
   }
   
@@ -222,6 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const response = await fetch(`/api/battles/${id}`);
       const battle = await response.json();
+      currentBattle = battle;
       
       battleInfo.innerHTML = '';
       
@@ -296,6 +360,27 @@ document.addEventListener('DOMContentLoaded', () => {
       viewBattlesDiv.classList.add('hidden');
       createBattleDiv.classList.add('hidden');
       battleDetailDiv.classList.remove('hidden');
+      // Configurar controles según modo
+      if (battle.mode === 'manual') {
+        // Mostrar opciones de ataque
+        attackBtn.classList.remove('hidden');
+        finishBtn.classList.add('hidden');
+        toggleHistoryBtn.classList.remove('hidden');
+        battleHistory.classList.add('hidden');
+        messagesDiv.innerHTML = '';
+        // rellenar historial inicial
+        battleHistory.innerHTML = battle.attackHistory.map(h => {
+          const attacker = battle.characters.find(c => c.id === h.attackerId);
+          const target = battle.characters.find(c => c.id === h.targetId);
+          return `<li><strong>${attacker.alias||attacker.name}</strong> causó ${h.damage} a <strong>${target.alias||target.name}</strong>. HP tras: ${h.targetHpAfter}</li>`;
+        }).join('');
+      } else {
+        // modo automático: ocultar controles
+        attackBtn.classList.add('hidden');
+        finishBtn.classList.add('hidden');
+        toggleHistoryBtn.classList.add('hidden');
+        battleHistory.classList.add('hidden');
+      }
     } catch (error) {
       console.error('Error cargando detalles de batalla:', error);
       alert('Error al cargar los detalles de la batalla. Intenta de nuevo más tarde.');
@@ -305,17 +390,24 @@ document.addEventListener('DOMContentLoaded', () => {
   async function createBattle() {
     const heroId = heroSelect.value;
     const villainId = villainSelect.value;
-    const location = locationInput.value;
+    const location = locationSelect.value;
     
     if (!heroId || !villainId) {
       alert('Debes seleccionar un héroe y un villano para crear una batalla.');
       return;
     }
+    if (!location) {
+      alert('Debes seleccionar una ubicación válida.');
+      return;
+    }
     
+    // Incluir modo de batalla
+    const selectedMode = document.querySelector('input[name="battleMode"]:checked').value;
     const battleData = {
       heroId,
       villainId,
-      location
+      location,
+      mode: selectedMode
     };
     
     try {
@@ -338,10 +430,16 @@ document.addEventListener('DOMContentLoaded', () => {
       // Limpiar formulario
       heroSelect.value = '';
       villainSelect.value = '';
-      locationInput.value = '';
-      
-      // Ver detalles de la batalla creada
-      viewBattleDetails(createdBattle.id);
+      locationSelect.value = '';
+      // Flujo según modo
+      if (selectedMode === 'auto') {
+        // Finalizar automáticamente y mostrar detalles
+        await fetch(`/api/battles/${createdBattle.id}/finish`, { method: 'POST' });
+        viewBattleDetails(createdBattle.id);
+      } else {
+        // Modo manual: mostrar detalles para ataques paso a paso
+        viewBattleDetails(createdBattle.id);
+      }
     } catch (error) {
       alert(`Error: ${error.message}`);
     }

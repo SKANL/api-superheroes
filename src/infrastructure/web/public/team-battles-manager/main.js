@@ -31,9 +31,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const messagesDiv = document.getElementById('messages');
   const resultTitle = document.getElementById('resultTitle');
   const resultStats = document.getElementById('resultStats');
+  const toggleHistoryBtn = document.getElementById('toggleHistoryBtn');
+  const battleHistory = document.getElementById('battleHistory');
 
   let battle = null;
   let selectedSide = null;
+  let historyVisible = false;
 
   // Cambio entre pestañas
   viewTab.addEventListener('click', () => {
@@ -51,6 +54,19 @@ document.addEventListener('DOMContentLoaded', () => {
     viewBattles.classList.add('hidden');
   });
 
+
+  // Toggle historial de batalla
+  toggleHistoryBtn.addEventListener('click', () => {
+    historyVisible = !historyVisible;
+    if (historyVisible) {
+      battleHistory.classList.remove('hidden');
+      toggleHistoryBtn.textContent = 'Ocultar Historial';
+    } else {
+      battleHistory.classList.add('hidden');
+      toggleHistoryBtn.textContent = 'Ver Historial de Batalla';
+    }
+  });
+
   // Selección de bando
   sideOptions.forEach(option => {
     option.addEventListener('click', () => {
@@ -60,14 +76,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // Validación de datos al cargar personajes
   sideBtn.addEventListener('click', async () => {
     if (!selectedSide) { 
       alert('Selecciona un bando para continuar'); 
       return; 
     }
-    
+
     sideLabel.innerText = selectedSide;
-    
+
     // Aplicar estilos según el bando seleccionado
     if (selectedSide === 'heroes') {
       document.getElementById('userTeam').className = 'heroes-side';
@@ -76,15 +93,22 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('userTeam').className = 'villains-side';
       document.getElementById('opponentTeam').className = 'heroes-side';
     }
-    
-    // Cargar personajes según bando
+
     try {
       const userResp = await fetch(`/api/${selectedSide}`);
+      if (!userResp.ok) throw new Error('Error al cargar los personajes del bando seleccionado.');
       const userChars = await userResp.json();
+
       const oppSide = selectedSide === 'heroes' ? 'villains' : 'heroes';
       const oppResp = await fetch(`/api/${oppSide}`);
+      if (!oppResp.ok) throw new Error('Error al cargar los personajes del bando contrario.');
       const oppChars = await oppResp.json();
-      
+
+      if (!userChars.length || !oppChars.length) {
+        alert('No hay suficientes personajes disponibles para iniciar la batalla.');
+        return;
+      }
+
       // Render de selecciones con mejor estilo
       userList.innerHTML = '';
       userChars.forEach(ch => {
@@ -97,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         userList.appendChild(label);
       });
-      
+
       opponentList.innerHTML = '';
       oppChars.forEach(ch => {
         const label = document.createElement('label');
@@ -109,12 +133,12 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         opponentList.appendChild(label);
       });
-      
+
       setupDiv.classList.add('hidden');
       selectorsDiv.classList.remove('hidden');
     } catch (err) {
-      alert('Error cargando personajes'); 
-      console.error(err);
+      alert('Error cargando personajes: ' + err.message); 
+      console.error('Detalles del error:', err);
     }
   });
 
@@ -122,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const side = sideLabel.innerText;
     const heroIds = [];
     const villainIds = [];
-    
+
     if (side === 'heroes') {
       document.querySelectorAll('#userList input:checked').forEach(cb => heroIds.push(cb.value));
       document.querySelectorAll('#opponentList input:checked').forEach(cb => villainIds.push(cb.value));
@@ -130,34 +154,61 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('#userList input:checked').forEach(cb => villainIds.push(cb.value));
       document.querySelectorAll('#opponentList input:checked').forEach(cb => heroIds.push(cb.value));
     }
-    
-    if (heroIds.length === 0 || villainIds.length === 0) { 
-      alert('Selecciona al menos un héroe y un villano para continuar'); 
-      return; 
+
+    if (heroIds.length === 0 || villainIds.length === 0) {
+      alert('Selecciona al menos un héroe y un villano para continuar');
+      return;
     }
-    
+
+    // Obtener modo seleccionado
+    const selectedMode = document.querySelector('input[name="battleMode"]:checked').value;
+
     try {
       const resp = await fetch('/api/team-battles', {
         method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ heroIds, villainIds, mode: 'manual' })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ heroIds, villainIds, mode: selectedMode })
       });
-      
+
+      if (!resp.ok) {
+        const errorDetails = await resp.json().catch(() => ({}));
+        throw new Error(errorDetails.error || 'Error al iniciar la batalla.');
+      }
+
       battle = await resp.json();
-      
+
+      // Crear dinámicamente el elemento battle-info si no existe
+      let battleInfo = document.getElementById('battle-info');
+      if (!battleInfo) {
+        battleInfo = document.createElement('div');
+        battleInfo.id = 'battle-info';
+        battleInfo.style.display = 'none'; // Ocultar el elemento
+        document.body.appendChild(battleInfo);
+      }
+
+      // Configurar el ID de la batalla en el DOM
+      battleInfo.dataset.battleId = battle.id;
+
       selectorsDiv.classList.add('hidden');
-      battleDiv.classList.remove('hidden');
-      
-      // Añadir mensaje inicial
-      const initialMessage = document.createElement('div');
-      initialMessage.className = 'message system';
-      initialMessage.innerText = '¡La batalla ha comenzado! Selecciona un personaje y realiza tu primer ataque.';
-      messagesDiv.appendChild(initialMessage);
-      
-      updateBattleUI();
+
+      // Flujo según modo seleccionado
+      if (selectedMode === 'auto') {
+        // Modo automático: finalizar inmediatamente
+        await finalizeBattle();
+      } else {
+        // Modo manual: mostrar panel de batalla
+        battleDiv.classList.remove('hidden');
+
+        const initialMessage = document.createElement('div');
+        initialMessage.className = 'message system';
+        initialMessage.innerText = '¡La batalla ha comenzado! Selecciona un personaje y realiza tu primer ataque.';
+        messagesDiv.appendChild(initialMessage);
+
+        updateBattleUI();
+      }
     } catch (err) {
-      alert('Error iniciando batalla'); 
-      console.error(err);
+      alert('Error iniciando batalla: ' + err.message);
+      console.error('Detalles del error:', err);
     }
   });
 
@@ -225,39 +276,154 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   finishBtn.addEventListener('click', async () => {
-    try {
-      const resp = await fetch(`/api/team-battles/${battle.id}/finish`, { method: 'POST' });
-      const result = await resp.json();
-      
-      // Mostrar resultados en la sección de resultados
-      if (result.result.includes('Heroes')) {
-        resultTitle.innerText = '¡Victoria de los Héroes!';
-        resultTitle.style.color = '#1890ff';
-      } else if (result.result.includes('Villains')) {
-        resultTitle.innerText = '¡Victoria de los Villanos!';
-        resultTitle.style.color = '#ff1a1a';
-      } else {
-        resultTitle.innerText = '¡Empate!';
-        resultTitle.style.color = '#666666';
-      }
-      
-      resultStats.innerHTML = `<p><strong>${result.result}</strong></p>`;
-      
-      if (Array.isArray(result.statistics)) {
-        resultStats.innerHTML += '<h3>Estadísticas de la batalla:</h3>';
-        result.statistics.forEach(stat => {
-          resultStats.innerHTML += `<p>${stat}</p>`;
-        });
-      }
-      
-      battleDiv.classList.add('hidden');
-      resultsDiv.classList.remove('hidden');
-      
-    } catch (err) {
-      alert('Error finalizando batalla'); 
-      console.error(err);
-    }
+    await finalizeBattle();
   });
+
+  // Función auxiliar para finalizar batalla (reutilizable en modo auto y manual)
+  async function finalizeBattle() {
+    try {
+      const battleId = battle.id;
+      const resp = await fetch(`/api/team-battles/${battleId}/finish`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (!resp.ok) {
+        const err = await resp.text();
+        throw new Error(err || 'Error al finalizar la batalla');
+      }
+      const data = await resp.json();
+      // Mostrar sección de resultados
+      document.getElementById('results').classList.remove('hidden');
+      // Traducir estado
+      const stateMap = { heroes: 'Héroes ganaron', villains: 'Villanos ganaron', draw: 'Empate' };
+      const stateES = stateMap[data.result] || data.result;
+      document.getElementById('resultTitle').textContent = `ID de batalla: ${battleId} · Resultado: ${stateES}`;
+      // Renderizar estadísticas recibidas
+      resultStats.innerHTML = '';
+      const grid = document.createElement('div');
+      grid.className = 'result-grid';
+      data.statistics.forEach(c => {
+        const card = document.createElement('div');
+        card.className = 'result-card' + (c.isAlive ? '' : ' defeated');
+        card.innerHTML = `
+          <div><strong>${c.name}</strong></div>
+          <div>${c.type.charAt(0).toUpperCase() + c.type.slice(1)}</div>
+          <div>HP: ${c.health}</div>
+        `;
+        grid.appendChild(card);
+      });
+      resultStats.appendChild(grid);
+      document.getElementById('battle').classList.add('hidden');
+      finishBtn.classList.add('hidden');
+      
+      // Mostrar historial de batalla si existe
+      if (data.battleHistory) {
+        renderBattleHistory(data.battleHistory);
+      }
+    } catch (error) {
+      console.error('Error al finalizar la batalla:', error);
+      alert(error.message || 'Error al finalizar la batalla');
+    }
+  }
+
+  // Función para renderizar el historial de batalla
+  function renderBattleHistory(historyData) {
+    battleHistory.innerHTML = '';
+    
+    // Mostrar rondas si existen (modo automático)
+    if (historyData.rounds && historyData.rounds.length > 0) {
+      historyData.rounds.forEach(round => {
+        const roundDiv = document.createElement('div');
+        roundDiv.className = 'round-section';
+        
+        const roundHeader = document.createElement('div');
+        roundHeader.className = 'round-header';
+        roundHeader.innerHTML = `
+          <span>Ronda ${round.roundNumber}</span>
+          <span class="round-winner ${round.result}">${
+            round.result === 'heroes' ? 'Ganaron Héroes' : 
+            round.result === 'villains' ? 'Ganaron Villanos' : 'Empate'
+          }</span>
+        `;
+        
+        const actionsGrid = document.createElement('div');
+        actionsGrid.className = 'actions-grid';
+        
+        // Acciones de héroes
+        const heroesActions = document.createElement('div');
+        heroesActions.className = 'team-actions heroes';
+        heroesActions.innerHTML = `
+          <h4>Héroes (Total: ${round.heroTotal || 0} daño)</h4>
+          ${round.heroActions.map(action => `
+            <div class="action-item">
+              ${action.name} causó <span class="action-damage">${action.damage}</span> de daño
+            </div>
+          `).join('')}
+        `;
+        
+        // Acciones de villanos
+        const villainsActions = document.createElement('div');
+        villainsActions.className = 'team-actions villains';
+        villainsActions.innerHTML = `
+          <h4>Villanos (Total: ${round.villainTotal || 0} daño)</h4>
+          ${round.villainActions.map(action => `
+            <div class="action-item">
+              ${action.name} causó <span class="action-damage">${action.damage}</span> de daño
+            </div>
+          `).join('')}
+        `;
+        
+        actionsGrid.appendChild(heroesActions);
+        actionsGrid.appendChild(villainsActions);
+        
+        roundDiv.appendChild(roundHeader);
+        roundDiv.appendChild(actionsGrid);
+        battleHistory.appendChild(roundDiv);
+      });
+    }
+    
+    // Mostrar ataques individuales si existen (modo manual)
+    if (historyData.attackHistory && historyData.attackHistory.length > 0) {
+      const attacksDiv = document.createElement('div');
+      attacksDiv.className = 'round-section';
+      
+      const attacksHeader = document.createElement('div');
+      attacksHeader.className = 'round-header';
+      attacksHeader.innerHTML = '<span>Ataques Individuales</span>';
+      
+      const attacksList = document.createElement('div');
+      historyData.attackHistory.forEach((attack, index) => {
+        const attackDiv = document.createElement('div');
+        attackDiv.className = 'action-item';
+        
+        // Encontrar nombres de atacante y objetivo desde los datos de batalla
+        const attackerName = battle.characters.find(c => c.id === attack.attackerId)?.alias || 
+                            battle.characters.find(c => c.id === attack.attackerId)?.name || 
+                            attack.attackerId;
+        const targetName = battle.characters.find(c => c.id === attack.targetId)?.alias || 
+                          battle.characters.find(c => c.id === attack.targetId)?.name || 
+                          attack.targetId;
+        
+        attackDiv.innerHTML = `
+          <strong>Ataque ${index + 1}:</strong> 
+          ${attackerName} atacó a ${targetName} causando 
+          <span class="action-damage">${attack.damage}</span> de daño
+          <br><small>HP restante del objetivo: ${attack.targetHpAfter}</small>
+        `;
+        attacksList.appendChild(attackDiv);
+      });
+      
+      attacksDiv.appendChild(attacksHeader);
+      attacksDiv.appendChild(attacksList);
+      battleHistory.appendChild(attacksDiv);
+    }
+    
+    // Si no hay historial
+    if ((!historyData.rounds || historyData.rounds.length === 0) && 
+        (!historyData.attackHistory || historyData.attackHistory.length === 0)) {
+      battleHistory.innerHTML = '<p style="text-align: center; color: #666;">No hay historial de batalla disponible.</p>';
+    }
+  }
   
   newBattleBtn.addEventListener('click', () => {
     // Resetear todo para una nueva batalla
@@ -269,6 +435,12 @@ document.addEventListener('DOMContentLoaded', () => {
     messagesDiv.innerHTML = '';
     finishBtn.classList.add('hidden');
     attackBtn.disabled = false;
+    // Resetear modo a manual por defecto
+    document.querySelector('input[name="battleMode"][value="manual"]').checked = true;
+    // Resetear historial
+    historyVisible = false;
+    battleHistory.classList.add('hidden');
+    toggleHistoryBtn.textContent = 'Ver Historial de Batalla';
   });
 
   function updateBattleUI() {
@@ -396,7 +568,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <h3>Batalla #${battle.id}</h3>
           <div class="battle-details">
             <div><strong>Estado:</strong> ${battle.status === 'ongoing' ? 'En progreso' : 'Finalizada'}</div>
-            <div><strong>Ronda actual:</strong> ${battle.currentRound}</div>
+            <div><strong>Ronda currente:</strong> ${battle.currentRound}</div>
             <div class="team-status">
               <div><strong>Héroes:</strong> ${heroesAlive}/${heroesTotal} activos</div>
               <div><strong>Villanos:</strong> ${villainsAlive}/${villainsTotal} activos</div>

@@ -64,7 +64,7 @@ export class CreateTeamBattleUseCase {
       currentRoundIndex: 0,
       status: 'in_progress',
       characters,
-      mode: mode || 'manual'
+      mode: mode || 'manual' // Guardar el modo seleccionado
     });
     
     // Guardar

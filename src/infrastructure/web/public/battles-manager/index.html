@@ -121,21 +121,17 @@
   <main class="container">
     <header>
       <h1 id="main-title" tabindex="0">Battles Manager</h1>
-      <div style="margin-top: 10px;">
+      <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
         <a href="/dashboard" style="text-decoration: none; color: #faad14;">← Volver al Panel de Control</a>
+        <a href="/api/docs/battles" target="_blank" style="text-decoration: none; background-color: #faad14; color: white; padding: 8px 16px; border-radius: 4px;">
+          Ver API Docs
+        </a>
       </div>
     </header>
-    
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-      <div class="tab-buttons">
-        <div id="viewTab" class="tab-button active">Ver Batallas</div>
-        <div id="createTab" class="tab-button">Crear Batalla</div>
-      </div>
-      <a href="/api/docs/battles" target="_blank" style="text-decoration: none; background-color: #faad14; color: white; padding: 8px 16px; border-radius: 4px;">
-        Ver API Docs
-      </a>
+    <div class="tab-buttons">
+      <div id="viewTab" class="tab-button active">Ver Batallas</div>
+      <div id="createTab" class="tab-button">Crear Batalla</div>
     </div>
-    
     <div id="viewBattles">
       <div class="filters">
         <label for="heroFilter">Filtrar por Héroe:</label>
@@ -186,8 +182,16 @@
       </div>
       
       <div class="form-group">
-        <label for="locationInput">Ubicación:</label>
-        <input type="text" id="locationInput" placeholder="Ej: Ciudad Gótica">
+        <label for="locationSelect">Ubicación:</label>
+        <select id="locationSelect">
+          <option value="">Selecciona una ubicación</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label>Modo de batalla:</label>
+        <label><input type="radio" name="battleMode" value="manual" checked> Manual</label>
+        <label><input type="radio" name="battleMode" value="auto"> Automático</label>
       </div>
       
       <button id="createBattleBtn">Crear Batalla</button>
@@ -196,6 +200,23 @@
     <div id="battleDetail" class="hidden">
       <h2>Detalles de la Batalla</h2>
       <div id="battleInfo"></div>
+      <!-- Controles de batalla manual -->
+      <div id="battleControls">
+        <div class="form-group">
+          <label for="attackTypeSelect">Tipo de ataque:</label>
+          <select id="attackTypeSelect">
+            <option value="normal">Normal</option>
+            <option value="special">Especial</option>
+          </select>
+        </div>
+        <div class="actions">
+          <button id="attackBtn">Atacar</button>
+          <button id="finishBtn" class="hidden">Finalizar Batalla</button>
+          <button id="toggleHistoryBtn" class="hidden">Ver Historial de Batalla</button>
+        </div>
+        <div id="messages" class="messages"></div>
+        <ul id="battleHistory" class="hidden"></ul>
+      </div>
       <button id="backToListBtn">Volver a la Lista</button>
     </div>
     
@@ -214,6 +235,9 @@
     <script src="/swagger-custom/swagger-ui-standalone-preset.js"></script>
     <script src="swagger-app.js"></script>
     
+    <script src="swagger-custom/swagger-ui-bundle.js"></script>
+    <script src="swagger-custom/swagger-ui-standalone-preset.js"></script>
+    <script src="swagger-app.js"></script>
     <script src="main.js"></script>
   </main>
 </body>

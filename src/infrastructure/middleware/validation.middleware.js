@@ -120,11 +120,19 @@ export const ValidationMiddleware = {
   battleValidation: {
     create: [
       body('heroId').isString().notEmpty().withMessage('heroId is required'),
-      body('villainId')
-        .isString()
-        .notEmpty()
-        .withMessage('villainId is required'),
+      body('villainId').isString().notEmpty().withMessage('villainId is required'),
       body('location').optional().isString().withMessage('location must be a string'),
+      body('mode').optional().isIn(['manual','auto']).withMessage('mode must be "manual" or "auto"'),
+      (req, res, next) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+          return res.status(400).json({ errors: errors.array() });
+        }
+        next();
+      },
+    ],
+    idParam: [
+      param('id').isString().notEmpty().withMessage('id is required'),
       (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {

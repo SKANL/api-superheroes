@@ -159,5 +159,75 @@ export default controller => {
    *                 $ref: '#/components/schemas/Battle'
    */
   router.get('/villain/:villainId', controller.listByVillain.bind(controller));
+  /**
+   * @swagger
+   * /api/battles/{id}/attack:
+   *   post:
+   *     summary: Ejecutar un ataque en una batalla
+   *     tags: [Battles]
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               attackType:
+   *                 type: string
+   *                 enum: [normal, special]
+   *                 example: normal
+   *     responses:
+   *       200:
+   *         description: Resultado del ataque y estado actualizado
+   *       400:
+   *         description: Ataque inválido o batalla finalizada
+   *       404:
+   *         description: Batalla no encontrada
+   */
+  router.post('/:id/attack', battleValidation.idParam, controller.attack.bind(controller));
+  /**
+   * @swagger
+   * /api/battles/{id}/finish:
+   *   post:
+   *     summary: Finalizar la batalla y devolver resultados
+   *     tags: [Battles]
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *     responses:
+   *       200:
+   *         description: Resultados de la batalla
+   *       404:
+   *         description: Batalla no encontrada
+   */
+  router.post('/:id/finish', battleValidation.idParam, controller.finish.bind(controller));
+  /**
+   * @swagger
+   * /api/battles/{id}/state:
+   *   get:
+   *     summary: Obtener el estado actual de una batalla
+   *     tags: [Battles]
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *     responses:
+   *       200:
+   *         description: Estado actualizado de la batalla
+   *       404:
+   *         description: Batalla no encontrada
+   */
+  router.get('/:id/state', battleValidation.idParam, controller.state.bind(controller));
   return router;
 };

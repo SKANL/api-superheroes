@@ -5,6 +5,7 @@ import heroRoutes from '../web/routes/hero.routes.js';
 import villainRoutes from '../web/routes/villain.routes.js';
 import battleRoutes from '../web/routes/battle.routes.js';
 import teamBattleRoutes from '../web/routes/teamBattle.routes.js';
+import cityRoutes from '../web/routes/city.routes.js';
 
 export default (controllers, app) => {
 
@@ -15,6 +16,7 @@ export default (controllers, app) => {
       villains: villainRoutes(controllers.villain),
       battles: battleRoutes(controllers.battle),
       teamBattles: teamBattleRoutes(controllers.teamBattle),
+      cities: cityRoutes(controllers.city),
     },
     docs: docsRoutes(app),
   };

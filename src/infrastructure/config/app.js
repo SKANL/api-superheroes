@@ -23,6 +23,8 @@ import { GetBattleUseCase } from '../../application/use-cases/GetBattleUseCase.j
 import { ListBattlesUseCase } from '../../application/use-cases/ListBattlesUseCase.js';
 import { ListBattlesByHeroUseCase } from '../../application/use-cases/ListBattlesByHeroUseCase.js';
 import { ListBattlesByVillainUseCase } from '../../application/use-cases/ListBattlesByVillainUseCase.js';
+import { PerformBattleAttackUseCase } from '../../application/use-cases/PerformBattleAttackUseCase.js';
+import { FinishBattleUseCase } from '../../application/use-cases/FinishBattleUseCase.js';
 import { JsonTeamBattleRepository } from '../adapters/repositories/JsonTeamBattleRepository.js';
 import { InMemoryTeamBattleRepository } from '../adapters/repositories/InMemoryTeamBattleRepository.js';
 import { CreateTeamBattleUseCase } from '../../application/use-cases/CreateTeamBattleUseCase.js';
@@ -40,6 +42,7 @@ import { VillainController } from '../adapters/controllers/villain.controller.js
 import { BattleController } from '../adapters/controllers/battle.controller.js';
 import { TeamBattleController } from '../adapters/controllers/TeamBattleController.js';
 import routesConfig from './routes.config.js';
+import { CityController } from '../adapters/controllers/city.controller.js';
 import { SwaggerConfig } from './swagger.config.js';
 import express from 'express';
 import path from 'path';
@@ -85,6 +88,8 @@ export function createApp() {
   const listBattlesUseCase = new ListBattlesUseCase(battleRepo);
   const listBattlesByHeroUseCase = new ListBattlesByHeroUseCase(battleRepo);
   const listBattlesByVillainUseCase = new ListBattlesByVillainUseCase(battleRepo);
+  const performBattleAttackUseCase = new PerformBattleAttackUseCase({ battleRepository: battleRepo });
+  const finishBattleUseCase = new FinishBattleUseCase({ battleRepository: battleRepo });
 
   const createTeamBattleUseCase = new CreateTeamBattleUseCase(teamBattleRepo, heroRepo, villainRepo);
   const getTeamBattleUseCase = new GetTeamBattleUseCase(teamBattleRepo);
@@ -118,10 +123,19 @@ export function createApp() {
   });
   const heroController = new HeroController({ createHeroUseCase, getHeroUseCase, listHeroesUseCase, findHeroesByCityUseCase, updateHeroUseCase, deleteHeroUseCase });
   const villainController = new VillainController({ createVillainUseCase, getVillainUseCase, listVillainsUseCase, findVillainsByCityUseCase, updateVillainUseCase, deleteVillainUseCase });
-  const battleController = new BattleController({ createBattleUseCase, getBattleUseCase, listBattlesUseCase, listBattlesByHeroUseCase, listBattlesByVillainUseCase });
+  const battleController = new BattleController({
+    createBattleUseCase,
+    getBattleUseCase,
+    listBattlesUseCase,
+    listBattlesByHeroUseCase,
+    listBattlesByVillainUseCase,
+    performBattleAttackUseCase,
+    finishBattleUseCase
+  });
 
   // Rutas
-  const routes = routesConfig({ hero: heroController, villain: villainController, battle: battleController, teamBattle: teamBattleController }, server.app);
+  const cityController = new CityController();
+  const routes = routesConfig({ hero: heroController, villain: villainController, battle: battleController, teamBattle: teamBattleController, city: cityController }, server.app);
   server.setupRoutes(routes);
   server.setupErrorHandling();
 

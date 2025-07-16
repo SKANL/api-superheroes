@@ -92,6 +92,7 @@ export class ServerConfig {
       if (api.villains) this.app.use('/api/villains', api.villains);
       if (api.battles) this.app.use('/api/battles', api.battles);
       if (api.teamBattles) this.app.use('/api/team-battles', api.teamBattles);
+      if (api.cities) this.app.use('/api/cities', api.cities);
     }
     // Team Battle Manager UI
     this.app.get('/api/team-battles-manager', (_req, res) => {

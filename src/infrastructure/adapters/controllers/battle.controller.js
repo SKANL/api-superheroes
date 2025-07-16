@@ -6,12 +6,16 @@ export class BattleController {
     listBattlesUseCase,
     listBattlesByHeroUseCase,
     listBattlesByVillainUseCase,
+    performBattleAttackUseCase,
+    finishBattleUseCase,
   }) {
     this.createBattleUseCase = createBattleUseCase;
     this.getBattleUseCase = getBattleUseCase;
     this.listBattlesUseCase = listBattlesUseCase;
     this.listBattlesByHeroUseCase = listBattlesByHeroUseCase;
     this.listBattlesByVillainUseCase = listBattlesByVillainUseCase;
+    this.performBattleAttackUseCase = performBattleAttackUseCase;
+    this.finishBattleUseCase = finishBattleUseCase;
   }
 
   async create(req, res, next) {
@@ -58,6 +62,40 @@ export class BattleController {
         req.params.villainId
       );
       res.json(battles);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // Ejecutar un ataque en batalla (flujo manual)
+  async attack(req, res, next) {
+    try {
+      const { id } = req.params;
+      const { attackType } = req.body;
+      const result = await this.performBattleAttackUseCase.execute({ battleId: id, attackType });
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // Finalizar la batalla y devolver resultados
+  async finish(req, res, next) {
+    try {
+      const { id } = req.params;
+      const result = await this.finishBattleUseCase.execute(id);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // Obtener estado actual de la batalla (polling)
+  async state(req, res, next) {
+    try {
+      const { id } = req.params;
+      const battle = await this.getBattleUseCase.execute(id);
+      res.json(battle);
     } catch (err) {
       next(err);
     }

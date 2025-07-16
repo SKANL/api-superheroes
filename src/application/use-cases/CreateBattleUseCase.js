@@ -9,7 +9,7 @@ export class CreateBattleUseCase {
     this.villainRepository = villainRepository;
   }
 
-  async execute({ heroId, villainId }) {
+  async execute({ heroId, villainId, mode = 'manual', location = null }) {
     if (!heroId || !villainId)
       throw new Error('heroId and villainId are required');
     // Obtener entidades
@@ -21,13 +21,23 @@ export class CreateBattleUseCase {
     BattleService.validateBattle(hero, villain);
     // Determinar resultado (placeholder)
     const result = BattleService.determineResult(hero, villain);
-    // Crear entidad
+    // Crear entidad con inicialización de flujo
     const battle = new Battle({
-      id: undefined, // El repo debe asignar el id
+      id: undefined, // el repositorio asignará el id
       heroId,
       villainId,
       date: new Date().toISOString(),
-      result,
+      result: null,
+      mode,
+      location,
+      rounds: [],
+      attackHistory: [],
+      currentRoundIndex: 0,
+      status: 'in_progress',
+      characters: [
+        { id: heroId, name: hero.name, alias: hero.alias, hpCurrent: hero.health, hpMax: hero.health, isAlive: true, type: 'hero' },
+        { id: villainId, name: villain.name, alias: villain.alias, hpCurrent: villain.health, hpMax: villain.health, isAlive: true, type: 'villain' }
+      ],
     });
     // Guardar
     return await this.battleRepository.create(battle);

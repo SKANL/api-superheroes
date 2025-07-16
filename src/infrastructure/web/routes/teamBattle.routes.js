@@ -74,8 +74,8 @@
  */
 import express from 'express';
 import { teamBattleValidation } from '../../middleware/validation.middleware.js';
+const router = express.Router();
 export default controller => {
-  const router = express.Router();
   /**
    * @swagger
    * /api/team-battles:
@@ -100,6 +100,11 @@ export default controller => {
    *                 type: array
    *                 items:
    *                   type: string
+   *               mode:
+   *                 type: string
+   *                 enum: [manual, auto]
+   *                 default: manual
+   *                 description: Modo de batalla - manual (ataques individuales) o auto (simulación completa)
    *     responses:
    *       201:
    *         description: Batalla por equipos registrada
@@ -490,3 +495,46 @@ export default controller => {
   
   return router;
 };
+
+function calculateBattleResult(battle) {
+  try {
+    console.log('Datos de entrada para calcular el resultado:', battle);
+
+    const heroesAlive = battle.characters.filter(c => c.type === 'hero' && c.isAlive).length;
+    const villainsAlive = battle.characters.filter(c => c.type === 'villain' && c.isAlive).length;
+
+    let result;
+    if (heroesAlive > villainsAlive) {
+      result = 'Heroes ganaron';
+    } else if (villainsAlive > heroesAlive) {
+      result = 'Villains ganaron';
+    } else {
+      result = 'Empate';
+    }
+
+    console.log('Resultado calculado:', result);
+    return result;
+  } catch (error) {
+    console.error('Error calculando el resultado:', error);
+    return null;
+  }
+}
+
+function generateBattleStatistics(battle) {
+  try {
+    console.log('Datos de entrada para generar estadísticas:', battle);
+
+    const statistics = battle.characters.map(c => ({
+      name: c.alias || c.name,
+      type: c.type,
+      health: c.health,
+      isAlive: c.isAlive,
+    }));
+
+    console.log('Estadísticas generadas:', statistics);
+    return statistics;
+  } catch (error) {
+    console.error('Error generando estadísticas:', error);
+    return null;
+  }
+}
