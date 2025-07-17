@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Superhéroes API - Panel de Control</title>
-  <link rel="stylesheet" href="/swagger-custom/swagger-ui.css"/>
+  <link rel="stylesheet" href="../swagger-custom/swagger-ui.css"/>
   <style>
     :root {
       --hero-color: #1890ff;
@@ -240,6 +240,46 @@
   </style>
 </head>
 <body>
+  <script type="module">
+    import authService from '/shared/auth.service.js';
+    if (!authService.isAuthenticated()) window.location = '/auth';
+    window.addEventListener('DOMContentLoaded', () => {
+      const btn = document.createElement('button');
+      btn.id = 'logout-btn';
+      btn.textContent = 'Cerrar sesión';
+      btn.style.position = 'absolute';
+      btn.style.top = '20px';
+      btn.style.right = '20px';
+      btn.addEventListener('click', () => { authService.logout(); window.location = '/auth'; });
+      document.body.appendChild(btn);
+    });
+  </script>
+  <script type="module">
+    import authService from '/shared/auth.service.js';
+    if (!authService.isAuthenticated()) window.location = '/auth';
+    window.addEventListener('DOMContentLoaded', () => {
+      const headerContainer = document.querySelector('header .container');
+      const user = authService.getUser();
+      const userSpan = document.createElement('span');
+      userSpan.id = 'user-info';
+      userSpan.textContent = `Usuario: ${user.username || user.email}`;
+      userSpan.style.color = 'white';
+      userSpan.style.marginLeft = '20px';
+      headerContainer.appendChild(userSpan);
+      const btn = document.createElement('button');
+      btn.id = 'logout-btn';
+      btn.textContent = 'Cerrar sesión';
+      btn.style.background = '#ff4d4f';
+      btn.style.border = 'none';
+      btn.style.color = '#fff';
+      btn.style.padding = '8px 16px';
+      btn.style.borderRadius = '4px';
+      btn.style.cursor = 'pointer';
+      btn.style.marginLeft = '20px';
+      btn.addEventListener('click', () => { authService.logout(); window.location = '/auth'; });
+      headerContainer.appendChild(btn);
+    });
+  </script>
   <header>
     <div class="container">
       <div>
@@ -421,8 +461,10 @@
     </footer>
     
     <!-- Swagger UI embebido -->
-    <script src="/swagger-custom/swagger-ui-bundle.js"></script>
-    <script src="/swagger-custom/swagger-ui-standalone-preset.js"></script>
+    <script src="../swagger-custom/swagger-ui-bundle.js"></script>
+    <script src="../swagger-custom/swagger-ui-standalone-preset.js"></script>
+    <script src="../shared/fetch-interceptor.js"></script>
+    <script src="../shared/swagger-auth.js"></script>
     <script src="swagger-app.js"></script>
   </div>
 </body>

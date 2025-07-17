@@ -25,11 +25,17 @@
  *         result:
  *           type: string
  *           example: "draw"
+ *         owner:
+ *           type: string
+ *           example: "user123"
+ *           description: "ID del usuario propietario de la batalla"
  */
 import express from 'express';
+import { authMiddleware } from '../../middleware/auth.middleware.js';
 import { battleValidation } from '../../middleware/validation.middleware.js';
-export default controller => {
+export default (controller, ownershipMiddleware) => {
   const router = express.Router();
+  router.use(authMiddleware);
   /**
    * @swagger
    * /api/battles:
@@ -110,7 +116,7 @@ export default controller => {
    *       404:
    *         description: Batalla no encontrada
    */
-  router.get('/:id', controller.get.bind(controller));
+  router.get('/:id', ownershipMiddleware.validateBattleOwnership, controller.get.bind(controller));
   /**
    * @swagger
    * /api/battles/hero/{heroId}:

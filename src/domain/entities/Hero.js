@@ -23,6 +23,7 @@ import { CustomError } from '../../shared/exceptions/CustomError.js';
  * @property {number} teamAffinity - Afinidad con el equipo (-100 a 100)
  * @property {number} energyCost - Costo de energía para habilidades especiales
  * @property {number} damageReduction - Reducción de daño (0-100)
+ * @property {string} owner - ID del usuario propietario del héroe
  */
 export class Hero {
   constructor({ 
@@ -44,10 +45,14 @@ export class Hero {
     critChance = 10,
     teamAffinity = 0,
     energyCost = 20,
-    damageReduction = 0
+    damageReduction = 0,
+    owner
   }) {
     if (!name || !alias) {
       throw new CustomError('Name and alias are required for Hero', 400);
+    }
+    if (!owner) {
+      throw new CustomError('Owner is required for Hero', 400);
     }
     
     // Campos básicos
@@ -56,6 +61,7 @@ export class Hero {
     this.alias = alias;
     this.city = city;
     this.team = team || null;
+    this.owner = owner;
     
     // Campos esenciales para batalla
     // Salud máxima y actual

@@ -36,7 +36,7 @@ export class CreateHeroUseCase {
     teamAffinity,
     energyCost,
     damageReduction
-  }) {
+  }, userId) {
     // Debug: log the received values
     console.log('CreateHeroUseCase received:', {
       name, alias, city, team, health, attack, defense, specialAbility,
@@ -69,7 +69,8 @@ export class CreateHeroUseCase {
       critChance,
       teamAffinity,
       energyCost,
-      damageReduction
+      damageReduction,
+      owner: userId
     });
     // Guardar
     return await this.heroRepository.create(hero);

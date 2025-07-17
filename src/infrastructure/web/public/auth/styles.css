@@ -1,0 +1,130 @@
+body {
+    background: linear-gradient(135deg, #007bff, #6610f2);
+    color: #fff;
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+.auth-container {
+    width: 100%;
+    max-width: 400px;
+    background: #fff;
+    color: #343a40;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    animation: fadeIn 1s ease-in-out;
+}
+.form-title {
+    text-align: center;
+    font-size: 1.8em;
+    margin-bottom: 20px;
+    font-weight: bold;
+    color: #6610f2;
+}
+.tabs {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+.tab {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    cursor: pointer;
+    background: #f8f9fa;
+    border-radius: 5px;
+    margin: 0 5px;
+    transition: background-color 0.3s, transform 0.3s;
+    font-weight: bold;
+}
+.tab.active {
+    background: #6610f2;
+    color: #fff;
+    transform: scale(1.1);
+}
+.form-footer {
+    text-align: center;
+    margin-top: 20px;
+}
+.form-footer .tab {
+    display: inline-block;
+    padding: 5px 10px;
+    margin: 5px;
+    background: #6610f2;
+    color: #fff;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+}
+.form-footer .tab:hover {
+    background: #520dc2;
+    transform: scale(1.05);
+}
+.form-footer .tab.active {
+    background: #6610f2;
+    color: #fff;
+    transform: scale(1.1);
+}
+.alert {
+    display: none;
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 5px;
+    animation: bounceIn 0.5s ease-in-out;
+}
+.alert.success {
+    background-color: #d4edda;
+    color: #155724;
+}
+.alert.danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    transition: border-color 0.3s;
+}
+input:focus {
+    border-color: #6610f2;
+    outline: none;
+}
+button {
+    width: 100%;
+    padding: 10px;
+    background: #6610f2;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+}
+button:hover {
+    background: #520dc2;
+    transform: scale(1.05);
+}
+.form {
+    display: none;
+}
+.form.active {
+    display: block;
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes bounceIn {
+    0% { transform: scale(0.9); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}

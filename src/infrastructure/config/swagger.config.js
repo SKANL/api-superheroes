@@ -11,9 +11,23 @@ export class SwaggerConfig {
           version: '1.0.0',
           description: 'API REST implementada con Clean Architecture',
         },
+        components: {
+          securitySchemes: {
+            bearerAuth: {
+              type: 'http',
+              scheme: 'bearer',
+              bearerFormat: 'JWT',
+            }
+          }
+        },
+        security: [
+          {
+            bearerAuth: []
+          }
+        ]
       },
       // Patrón relativo desde la raíz del proyecto (Windows y Unix)
-      apis: ['src/infrastructure/web/routes/*.js'],
+      apis: ['src/**/*.js', 'src/infrastructure/web/routes/auth.routes.js'], // Incluye todos los archivos .js y específicamente auth.routes.js
     };
   }
   
@@ -80,88 +94,34 @@ export class SwaggerConfig {
     // Default Swagger UI
     app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(specs));
 
-    // Specific docs for heroes
-    app.use('/api/docs/heroes', swaggerUi.serve, swaggerUi.setup(specs, {
-      swaggerOptions: {
-        tagsSorter: 'alpha',
-        filter: true,
-        persistAuthorization: true,
-        docExpansion: 'list',
-        defaultModelsExpandDepth: -1,
-        defaultModelExpandDepth: 3,
-        displayRequestDuration: true,
-        tryItOutEnabled: true,
-        showExtensions: true,
-        operationsSorter: 'alpha',
-        supportedSubmitMethods: ['get', 'put', 'post', 'delete', 'patch'],
-      },
-      customCss: '.swagger-ui .topbar { display: none }',
-      customSiteTitle: 'API Superheroes - Heroes Documentation',
-      customfavIcon: '/swagger-custom/favicon.png',
-      customJs: '/swagger-custom/custom.js',
-    }));
+    const createSwaggerUIOptions = (title, tags) => ({
+        swaggerOptions: {
+            tagsSorter: 'alpha',
+            filter: true,
+            persistAuthorization: true,
+            docExpansion: 'list',
+            defaultModelsExpandDepth: -1,
+            defaultModelExpandDepth: 3,
+            displayRequestDuration: true,
+            tryItOutEnabled: true,
+            showExtensions: true,
+            operationsSorter: 'alpha',
+            supportedSubmitMethods: ['get', 'put', 'post', 'delete', 'patch'],
+        },
+        customCss: '.swagger-ui .topbar { display: none }',
+        customSiteTitle: `API Superheroes - ${title} Documentation`,
+        customfavIcon: '/swagger-custom/favicon.png',
+        customJs: '/swagger-custom/custom.js',
+    });
 
-    // Specific docs for villains
-    app.use('/api/docs/villains', swaggerUi.serve, swaggerUi.setup(specs, {
-      swaggerOptions: {
-        tagsSorter: 'alpha',
-        filter: true,
-        persistAuthorization: true,
-        docExpansion: 'list',
-        defaultModelsExpandDepth: -1,
-        defaultModelExpandDepth: 3,
-        displayRequestDuration: true,
-        tryItOutEnabled: true,
-        showExtensions: true,
-        operationsSorter: 'alpha',
-        supportedSubmitMethods: ['get', 'put', 'post', 'delete', 'patch'],
-      },
-      customCss: '.swagger-ui .topbar { display: none }',
-      customSiteTitle: 'API Superheroes - Villains Documentation',
-      customfavIcon: '/swagger-custom/favicon.png',
-      customJs: '/swagger-custom/custom.js',
-    }));
+    const setupSwaggerUI = (path, title, tags) => {
+        const filteredSpecs = this.filterSpecsByTags(specs, tags);
+        app.use(path, swaggerUi.serve, swaggerUi.setup(filteredSpecs, createSwaggerUIOptions(title, tags)));
+    };
 
-    // Specific docs for battles
-    app.use('/api/docs/battles', swaggerUi.serve, swaggerUi.setup(specs, {
-      swaggerOptions: {
-        tagsSorter: 'alpha',
-        filter: true,
-        persistAuthorization: true,
-        docExpansion: 'list',
-        defaultModelsExpandDepth: -1,
-        defaultModelExpandDepth: 3,
-        displayRequestDuration: true,
-        tryItOutEnabled: true,
-        showExtensions: true,
-        operationsSorter: 'alpha',
-        supportedSubmitMethods: ['get', 'put', 'post', 'delete', 'patch'],
-      },
-      customCss: '.swagger-ui .topbar { display: none }',
-      customSiteTitle: 'API Superheroes - Battles Documentation',
-      customfavIcon: '/swagger-custom/favicon.png',
-      customJs: '/swagger-custom/custom.js',
-    }));
-
-    // Specific docs for team battles
-    app.use('/api/docs/team-battles', swaggerUi.serve, swaggerUi.setup(specs, {
-      swaggerOptions: {
-        tagsSorter: 'alpha',
-        filter: true,
-        persistAuthorization: true,
-        docExpansion: 'list',
-        defaultModelsExpandDepth: -1,
-        defaultModelExpandDepth: 3,
-        displayRequestDuration: true,
-        tryItOutEnabled: true,
-        showExtensions: true,
-        operationsSorter: 'alpha',
-        supportedSubmitMethods: ['get', 'put', 'post', 'delete', 'patch'],
-      },
-      customCss: '.swagger-ui .topbar { display: none }',
-      customSiteTitle: 'API Superheroes - Team Battles Documentation',
-      customfavIcon: '/swagger-custom/favicon.png',
-      customJs: '/swagger-custom/custom.js',
-    }));
+    setupSwaggerUI('/api/docs/heroes', 'Heroes', ['Heroes']);
+    setupSwaggerUI('/api/docs/villains', 'Villains', ['Villains']);
+    setupSwaggerUI('/api/docs/battles', 'Battles', ['Battles']);
+    setupSwaggerUI('/api/docs/team-battles', 'Team Battles', ['TeamBattles', 'Heroes', 'Villains']);
   }
 }

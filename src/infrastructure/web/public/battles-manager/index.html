@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Battles Manager</title>
-  <link rel="stylesheet" href="/swagger-custom/swagger-ui.css"/>
+  <link rel="stylesheet" href="../swagger-custom/swagger-ui.css"/>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
     .hidden { display: none; }
@@ -118,6 +118,20 @@
   </style>
 </head>
 <body>
+  <script type="module">
+    import authService from '/shared/auth.service.js';
+    if (!authService.isAuthenticated()) window.location = '/auth';
+    window.addEventListener('DOMContentLoaded', () => {
+      const btn = document.createElement('button');
+      btn.id = 'logout-btn';
+      btn.textContent = 'Cerrar sesión';
+      btn.style.position = 'absolute';
+      btn.style.top = '20px';
+      btn.style.right = '20px';
+      btn.addEventListener('click', () => { authService.logout(); window.location = '/auth'; });
+      document.body.appendChild(btn);
+    });
+  </script>
   <main class="container">
     <header>
       <h1 id="main-title" tabindex="0">Battles Manager</h1>
@@ -225,18 +239,16 @@
         <h3>⚔️ Endpoints API de Batallas</h3>
         <p>Prueba directamente los endpoints desde aquí:</p>
       </div>
-      <section class="section" aria-labelledby="api-doc-title">
-        <div id="swagger-ui" style="max-height: 600px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 8px; background: white;"></div>
-      </section>
+        <section class="section" aria-labelledby="api-doc-title">
+          <div id="swagger-ui" style="max-height: 600px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 8px; background: white;"></div>
+        </section>
     </footer>
     
     <!-- Swagger UI embebido -->
-    <script src="/swagger-custom/swagger-ui-bundle.js"></script>
-    <script src="/swagger-custom/swagger-ui-standalone-preset.js"></script>
-    <script src="swagger-app.js"></script>
-    
-    <script src="swagger-custom/swagger-ui-bundle.js"></script>
-    <script src="swagger-custom/swagger-ui-standalone-preset.js"></script>
+    <script src="../swagger-custom/swagger-ui-bundle.js"></script>
+    <script src="../swagger-custom/swagger-ui-standalone-preset.js"></script>
+    <script src="../shared/fetch-interceptor.js"></script>
+    <script src="../shared/swagger-auth.js"></script>
     <script src="swagger-app.js"></script>
     <script src="main.js"></script>
   </main>

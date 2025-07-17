@@ -29,6 +29,9 @@ Implementación de una API REST de Superhéroes y Villanos siguiendo Clean Archi
 - CRUD completo de superhéroes y villanos
 - Gestión de batallas entre héroes y villanos
 - Búsqueda por ciudad, equipo y otros criterios
+- Sistema de autenticación con JWT
+- Persistencia en MongoDB
+- Batallas por equipos (héroes vs. villanos)
 
 ## Instalación
 
@@ -36,9 +39,38 @@ Implementación de una API REST de Superhéroes y Villanos siguiendo Clean Archi
 npm install
 ```
 
+## Configuración de MongoDB
+
+Para utilizar MongoDB como base de datos:
+
+1. Asegúrate de tener MongoDB instalado localmente o utilizar un servicio en la nube.
+2. Crea un archivo `.env` en la raíz del proyecto con las siguientes variables:
+
+```
+MONGODB_URI=mongodb://localhost:27017/superheroes-api
+JWT_SECRET=your-super-secret-key
+JWT_EXPIRES_IN=7d
+PORT=3443
+NODE_ENV=development
+```
+
+3. Migra los datos de ejemplo ejecutando:
+
+```bash
+node scripts/migrate-to-mongodb.js
+```
+
+4. Inicia la aplicación con MongoDB:
+
+```bash
+node scripts/start-with-mongodb.js
+```
+
 ## Scripts útiles
 
 - `npm run dev` — Desarrollo con recarga
+- `node scripts/start-with-mongodb.js` — Inicia la aplicación con MongoDB
+- `node scripts/migrate-to-mongodb.js` — Migra datos JSON a MongoDB
 - `npm test` — Ejecuta tests
 - `npm run lint` — Linting
 - `npm run format` — Formatea código
@@ -83,6 +115,14 @@ Este comando eliminará directorios como `coverage/`, `lcov-report/`, `docs/gene
 ## Casos de Uso
 
 Los casos de uso implementados en el proyecto son:
+
+### Autenticación
+
+- `RegisterUserUseCase`: Registra un nuevo usuario.
+- `LoginUserUseCase`: Inicia sesión de un usuario.
+- `GetUserProfileUseCase`: Obtiene el perfil del usuario actual.
+- `ValidateBattleOwnershipUseCase`: Verifica si un usuario es propietario de una batalla.
+- `ValidateTeamBattleOwnershipUseCase`: Verifica si un usuario es propietario de una batalla por equipos.
 
 ### Héroes
 

@@ -17,7 +17,8 @@ export class VillainController {
 
   async create(req, res, next) {
     try {
-      const villain = await this.createVillainUseCase.execute(req.body);
+      const userId = req.user.id; // Del authMiddleware
+      const villain = await this.createVillainUseCase.execute(req.body, userId);
       res.status(201).json(villain);
     } catch (err) {
       next(err);
@@ -35,7 +36,8 @@ export class VillainController {
 
   async list(req, res, next) {
     try {
-      const villains = await this.listVillainsUseCase.execute();
+      const userId = req.user.id; // Del authMiddleware
+      const villains = await this.listVillainsUseCase.execute(userId);
       res.json(villains);
     } catch (err) {
       next(err);
@@ -44,8 +46,10 @@ export class VillainController {
 
   async findByCity(req, res, next) {
     try {
+      const userId = req.user.id; // Del authMiddleware
       const villains = await this.findVillainsByCityUseCase.execute(
-        req.params.city
+        req.params.city,
+        userId
       );
       res.json(villains);
     } catch (err) {

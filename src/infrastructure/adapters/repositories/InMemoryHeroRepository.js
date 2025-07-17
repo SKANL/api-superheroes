@@ -16,6 +16,12 @@ export class InMemoryHeroRepository {
   async findByCity(city) {
     return this.data.filter(h => h.city === city);
   }
+  async findByOwner(ownerId) {
+    return this.data.filter(h => h.owner === ownerId);
+  }
+  async findByCityAndOwner(city, ownerId) {
+    return this.data.filter(h => h.city === city && h.owner === ownerId);
+  }
   async create(hero) {
     const id = Date.now().toString();
     const newHero = { ...hero, id };

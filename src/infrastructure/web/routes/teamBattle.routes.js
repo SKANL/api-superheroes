@@ -29,6 +29,10 @@
  *         result:
  *           type: string
  *           example: "heroes"
+ *         owner:
+ *           type: string
+ *           example: "user123"
+ *           description: "ID del usuario propietario de la batalla por equipos"
  *         rounds:
  *           type: array
  *           items:
@@ -73,15 +77,20 @@
  *           example: "heroes"
  */
 import express from 'express';
+import { authMiddleware } from '../../middleware/auth.middleware.js';
 import { teamBattleValidation } from '../../middleware/validation.middleware.js';
-const router = express.Router();
-export default controller => {
+
+export default (controller, ownershipMiddleware) => {
+  const router = express.Router();
+  router.use(authMiddleware);
   /**
    * @swagger
    * /api/team-battles:
    *   post:
-   *     summary: Registrar una nueva batalla por equipos
+   *     summary: Registrar una nueva batalla por equipos (el usuario autenticado será el propietario)
    *     tags: [TeamBattles]
+   *     security:
+   *       - bearerAuth: []
    *     requestBody:
    *       required: true
    *       content:
@@ -120,8 +129,10 @@ export default controller => {
    * @swagger
    * /api/team-battles:
    *   get:
-   *     summary: Listar todas las batallas por equipos
+   *     summary: Listar todas las batallas por equipos del usuario autenticado
    *     tags: [TeamBattles]
+   *     security:
+   *       - bearerAuth: []
    *     responses:
    *       200:
    *         description: Lista de batallas por equipos
@@ -137,8 +148,10 @@ export default controller => {
    * @swagger
    * /api/team-battles/{id}:
    *   get:
-   *     summary: Obtener una batalla por equipos por ID
+   *     summary: Obtener una batalla por equipos por ID (requiere ser propietario)
    *     tags: [TeamBattles]
+   *     security:
+   *       - bearerAuth: []
    *     parameters:
    *       - in: path
    *         name: id
@@ -155,7 +168,7 @@ export default controller => {
    *       404:
    *         description: Batalla por equipos no encontrada
    */
-  router.get('/:id', controller.get.bind(controller));
+  router.get('/:id', ownershipMiddleware.validateTeamBattleOwnership, controller.get.bind(controller));
   /**
    * @swagger
    * /api/team-battles/hero/{heroId}:
@@ -206,8 +219,10 @@ export default controller => {
    * @swagger
    * /api/team-battles/{id}:
    *   put:
-   *     summary: Actualizar una batalla por equipos por ID
+   *     summary: Actualizar una batalla por equipos (requiere ser propietario)
    *     tags: [TeamBattles]
+   *     security:
+   *       - bearerAuth: []
    *     parameters:
    *       - in: path
    *         name: id
@@ -241,13 +256,15 @@ export default controller => {
    *       404:
    *         description: Batalla por equipos no encontrada
    */
-  router.put('/:id', teamBattleValidation.update, controller.update.bind(controller));
+  router.put('/:id', ownershipMiddleware.validateTeamBattleOwnership, teamBattleValidation.update, controller.update.bind(controller));
   /**
    * @swagger
    * /api/team-battles/{id}:
    *   delete:
-   *     summary: Eliminar una batalla por equipos por ID
+   *     summary: Eliminar una batalla por equipos por ID (requiere ser propietario)
    *     tags: [TeamBattles]
+   *     security:
+   *       - bearerAuth: []
    *     parameters:
    *       - in: path
    *         name: id
@@ -260,7 +277,7 @@ export default controller => {
    *       404:
    *         description: Batalla por equipos no encontrada
    */
-  router.delete('/:id', teamBattleValidation.idParam, controller.delete.bind(controller));
+  router.delete('/:id', ownershipMiddleware.validateTeamBattleOwnership, teamBattleValidation.idParam, controller.delete.bind(controller));
   /**
    * @swagger
    * /api/team-battles/{id}/state:
@@ -288,7 +305,7 @@ export default controller => {
    *       404:
    *         description: Batalla por equipos no encontrada
    */
-  router.get('/:id/state', teamBattleValidation.idParam, controller.state.bind(controller));
+  router.get('/:id/state', ownershipMiddleware.validateTeamBattleOwnership, teamBattleValidation.idParam, controller.state.bind(controller));
   /**
    * @swagger
    * /api/team-battles/{id}/restart:
@@ -364,7 +381,7 @@ export default controller => {
    *       404:
    *         description: Batalla no encontrada
    */
-  router.post('/:id/rounds', controller.performRoundAction.bind(controller));
+  router.post('/:id/rounds', ownershipMiddleware.validateTeamBattleOwnership, controller.performRoundAction.bind(controller));
   /**
    * @swagger
    * /api/team-battles/{id}/finish:
@@ -392,7 +409,7 @@ export default controller => {
    *                   items:
    *                     type: string
    */
-  router.post('/:id/finish', controller.finishBattle.bind(controller));
+  router.post('/:id/finish', ownershipMiddleware.validateTeamBattleOwnership, controller.finishBattle.bind(controller));
   /**
    * @swagger
    * /api/team-battles/{id}/attack:
@@ -455,9 +472,9 @@ export default controller => {
    *       404:
    *         description: Batalla no encontrada
    */
-  router.post('/:id/attack', teamBattleValidation.idParam, controller.performAttack.bind(controller));
+  router.post('/:id/attack', ownershipMiddleware.validateTeamBattleOwnership, teamBattleValidation.idParam, controller.performAttack.bind(controller));
   
-  router.post('/:id/restart', teamBattleValidation.idParam, controller.restart.bind(controller));
+  router.post('/:id/restart', ownershipMiddleware.validateTeamBattleOwnership, teamBattleValidation.idParam, controller.restart.bind(controller));
   
   /**
    * @swagger

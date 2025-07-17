@@ -18,7 +18,8 @@ export class HeroController {
 
   async create(req, res, next) {
     try {
-      const hero = await this.createHeroUseCase.execute(req.body);
+      const userId = req.user.id; // Del authMiddleware
+      const hero = await this.createHeroUseCase.execute(req.body, userId);
       res.status(201).json(hero);
     } catch (err) {
       next(err);
@@ -36,7 +37,8 @@ export class HeroController {
 
   async list(req, res, next) {
     try {
-      const heroes = await this.listHeroesUseCase.execute();
+      const userId = req.user.id; // Del authMiddleware
+      const heroes = await this.listHeroesUseCase.execute(userId);
       res.json(heroes);
     } catch (err) {
       next(err);
@@ -45,8 +47,10 @@ export class HeroController {
 
   async findByCity(req, res, next) {
     try {
+      const userId = req.user.id; // Del authMiddleware
       const heroes = await this.findHeroesByCityUseCase.execute(
-        req.params.city
+        req.params.city,
+        userId
       );
       res.json(heroes);
     } catch (err) {

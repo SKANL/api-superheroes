@@ -1,4 +1,6 @@
 // Rutas para Villain
+import { authMiddleware } from '../../middleware/auth.middleware.js';
+
 /**
  * @swagger
  * tags:
@@ -122,8 +124,11 @@
  */
 import express from 'express';
 import { villainValidation } from '../../middleware/validation.middleware.js';
-export default controller => {
-  const router = express.Router();
+const router = express.Router();
+export default (controller, ownershipMiddleware) => {
+  
+  // Todas las rutas requieren autenticación
+  router.use(authMiddleware);
   /**
    * @swagger
    * /api/villains:
@@ -135,45 +140,28 @@ export default controller => {
    *       content:
    *         application/json:
    *           schema:
-   *             $ref: '#/components/schemas/Villain'
-   *           example:
-   *             name: "El Rata"
-   *             alias: "Rata"
-   *             city: "Ciudad Gótica"
-   *             health: 90
-   *             attack: 70
-   *             defense: 40
-   *             specialAbility: "Ataque tóxico"
-   *             isAlive: true
-   *             roundsWon: 0
-   *             damage: 0
-   *             status: "normal"
-   *             stamina: 95
-   *             speed: 60
-   *             critChance: 20
-   *             teamAffinity: -15
-   *             energyCost: 30
-   *             damageReduction: 5
+   *             type: object
+   *             required:
+   *               - name
+   *               - city
+   *             properties:
+   *               name:
+   *                 type: string
+   *               city:
+   *                 type: string
    *     responses:
    *       201:
-   *         description: Villano creado
-   *         content:
-   *           application/json:
-   *             schema:
-   *               $ref: '#/components/schemas/Villain'
+   *         description: Villano creado exitosamente
    *       400:
-   *         description: Error de validación
+   *         description: Datos inválidos
    */
-  router.post(
-    '/',
-    villainValidation.create,
-    controller.create.bind(controller)
-  );
+  router.post('/', villainValidation.create, controller.create.bind(controller));
+  
   /**
    * @swagger
    * /api/villains:
    *   get:
-   *     summary: Listar todos los villanos
+   *     summary: Listar villanos del usuario autenticado
    *     tags: [Villains]
    *     responses:
    *       200:
@@ -186,11 +174,12 @@ export default controller => {
    *                 $ref: '#/components/schemas/Villain'
    */
   router.get('/', controller.list.bind(controller));
+  
   /**
    * @swagger
    * /api/villains/city/{city}:
    *   get:
-   *     summary: Listar villanos por ciudad
+   *     summary: Buscar villanos del usuario por ciudad
    *     tags: [Villains]
    *     parameters:
    *       - in: path
@@ -198,10 +187,10 @@ export default controller => {
    *         required: true
    *         schema:
    *           type: string
-   *         description: Nombre de la ciudad
+   *         description: Nombre de la ciudad para buscar
    *     responses:
    *       200:
-   *         description: Lista de villanos en la ciudad
+   *         description: Lista de villanos en la ciudad especificada
    *         content:
    *           application/json:
    *             schema:
@@ -210,6 +199,7 @@ export default controller => {
    *                 $ref: '#/components/schemas/Villain'
    */
   router.get('/city/:city', controller.findByCity.bind(controller));
+  
   /**
    * @swagger
    * /api/villains/{id}:
@@ -222,23 +212,19 @@ export default controller => {
    *         required: true
    *         schema:
    *           type: string
-   *         description: ID del villano
    *     responses:
    *       200:
-   *         description: Detalle del villano
-   *         content:
-   *           application/json:
-   *             schema:
-   *               $ref: '#/components/schemas/Villain'
+   *         description: Detalles del villano
    *       404:
    *         description: Villano no encontrado
    */
-  router.get('/:id', controller.get.bind(controller));
+  router.get('/:id', ownershipMiddleware.validateVillainOwnership, controller.get.bind(controller));
+
   /**
    * @swagger
    * /api/villains/{id}:
    *   put:
-   *     summary: Actualizar un villano
+   *     summary: Actualizar un villano por ID
    *     tags: [Villains]
    *     parameters:
    *       - in: path
@@ -246,35 +232,32 @@ export default controller => {
    *         required: true
    *         schema:
    *           type: string
-   *         description: ID del villano
    *     requestBody:
    *       required: true
    *       content:
    *         application/json:
    *           schema:
-   *             $ref: '#/components/schemas/Villain'
+   *             type: object
+   *             properties:
+   *               name:
+   *                 type: string
+   *               city:
+   *                 type: string
    *     responses:
    *       200:
-   *         description: Villano actualizado
-   *         content:
-   *           application/json:
-   *             schema:
-   *               $ref: '#/components/schemas/Villain'
+   *         description: Villano actualizado exitosamente
    *       400:
    *         description: Datos inválidos
    *       404:
    *         description: Villano no encontrado
    */
-  router.put(
-    '/:id',
-    villainValidation.update,
-    controller.update.bind(controller)
-  );
+  router.put('/:id', ownershipMiddleware.validateVillainOwnership, villainValidation.update, controller.update.bind(controller));
+
   /**
    * @swagger
    * /api/villains/{id}:
    *   delete:
-   *     summary: Eliminar un villano
+   *     summary: Eliminar un villano por ID
    *     tags: [Villains]
    *     parameters:
    *       - in: path
@@ -282,13 +265,11 @@ export default controller => {
    *         required: true
    *         schema:
    *           type: string
-   *         description: ID del villano
    *     responses:
    *       204:
-   *         description: Villano eliminado
-   *       404:
-   *         description: Villano no encontrado
+   *         description: Villano eliminado exitosamente
    */
-  router.delete('/:id', controller.delete.bind(controller));
+  router.delete('/:id', ownershipMiddleware.validateVillainOwnership, controller.delete.bind(controller));
+
   return router;
 };

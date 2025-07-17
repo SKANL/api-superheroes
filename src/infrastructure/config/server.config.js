@@ -25,13 +25,6 @@ export class ServerConfig {
     );
     this.app.use(express.json({ limit: '10mb', type: 'application/json' }));
     this.app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-    // Serve custom Swagger UI assets
-    this.app.use(
-      '/swagger-custom',
-      express.static(
-        path.join(process.cwd(), 'src/infrastructure/web/public/swagger-custom')
-      )
-    );
     // Serve Team Battle Manager static assets
     this.app.use(
       '/api/team-battles-manager',
@@ -47,6 +40,54 @@ export class ServerConfig {
       )
     );
     // Serve Villains Manager static assets
+    this.app.use(
+      '/api/villains-manager',
+      express.static(
+        path.join(process.cwd(), 'src/infrastructure/web/public/villains-manager')
+      )
+    );
+    
+    // Serve Auth static assets
+    this.app.use(
+      '/auth',
+      express.static(
+        path.join(process.cwd(), 'src/infrastructure/web/public/auth')
+      )
+    );
+    
+    // Serve shared static assets
+    this.app.use(
+      '/shared',
+      express.static(
+        path.join(process.cwd(), 'src/infrastructure/web/public/shared')
+      )
+    );
+    
+    // Serve Swagger custom assets for all UIs
+    this.app.use(
+      '/swagger-custom',
+      express.static(
+        path.join(process.cwd(), 'src/infrastructure/web/public/swagger-custom')
+      )
+    );
+    
+    // Serve Swagger custom assets for API routes (relative paths from /api/)
+    this.app.use(
+      '/api/swagger-custom',
+      express.static(
+        path.join(process.cwd(), 'src/infrastructure/web/public/swagger-custom')
+      )
+    );
+    
+    // Serve shared assets for API routes (relative paths from /api/)
+    this.app.use(
+      '/api/shared',
+      express.static(
+        path.join(process.cwd(), 'src/infrastructure/web/public/shared')
+      )
+    );
+    
+    // Other static assets
     this.app.use(
       '/api/villains-manager',
       express.static(
@@ -72,7 +113,7 @@ export class ServerConfig {
   setupRoutes(routes) {
     // Ruta raíz - Redirección al dashboard
     this.app.get('/', (req, res) => {
-      res.redirect('/dashboard');
+      res.redirect('/auth');
     });
     
     // Ruta de estado API (movida desde /)
@@ -92,7 +133,13 @@ export class ServerConfig {
       if (api.villains) this.app.use('/api/villains', api.villains);
       if (api.battles) this.app.use('/api/battles', api.battles);
       if (api.teamBattles) this.app.use('/api/team-battles', api.teamBattles);
-      if (api.cities) this.app.use('/api/cities', api.cities);
+    if (api.auth) {
+      // Ruta auth con prefijo /api (para API)
+      this.app.use('/api/auth', api.auth);
+      // Ruta auth sin prefijo /api (para compatibilidad con frontend)
+      this.app.use('/auth', api.auth);
+    }
+    if (api.cities) this.app.use('/api/cities', api.cities);
     }
     // Team Battle Manager UI
     this.app.get('/api/team-battles-manager', (_req, res) => {
@@ -136,6 +183,15 @@ export class ServerConfig {
         path.join(
           process.cwd(),
           'src/infrastructure/web/public/dashboard/index.html'
+        )
+      );
+    });
+    // Auth UI
+    this.app.get('/auth', (_req, res) => {
+      res.sendFile(
+        path.join(
+          process.cwd(),
+          'src/infrastructure/web/public/auth/index.html'
         )
       );
     });

@@ -37,6 +37,16 @@ export class JsonHeroRepository {
     return data.filter(h => h.city === city);
   }
 
+  async findByOwner(ownerId) {
+    const data = await this._read();
+    return data.filter(h => h.owner === ownerId);
+  }
+
+  async findByCityAndOwner(city, ownerId) {
+    const data = await this._read();
+    return data.filter(h => h.city === city && h.owner === ownerId);
+  }
+
   async create(hero) {
     const data = await this._read();
     const id = Date.now().toString();

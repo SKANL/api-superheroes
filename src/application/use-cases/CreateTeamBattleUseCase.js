@@ -9,7 +9,7 @@ export class CreateTeamBattleUseCase {
     this.villainRepository = villainRepository;
   }
 
-  async execute({ heroIds, villainIds, mode }) {
+  async execute({ heroIds, villainIds, mode, owner }) {
     if (!Array.isArray(heroIds) || !Array.isArray(villainIds)) {
       throw new Error('heroIds and villainIds must be arrays');
     }
@@ -64,9 +64,9 @@ export class CreateTeamBattleUseCase {
       currentRoundIndex: 0,
       status: 'in_progress',
       characters,
-      mode: mode || 'manual' // Guardar el modo seleccionado
+      mode: mode || 'manual', // Guardar el modo seleccionado
+      owner: owner
     });
-    
     // Guardar
     return await this.teamBattleRepository.create(teamBattle);
   }

@@ -5,6 +5,8 @@ export class InMemoryVillainRepository {
   async findByAlias(alias) { return this.data.find(v => v.alias === alias) || null; }
   async findAll() { return [...this.data]; }
   async findByCity(city) { return this.data.filter(v => v.city === city); }
+  async findByOwner(ownerId) { return this.data.filter(v => v.owner === ownerId); }
+  async findByCityAndOwner(city, ownerId) { return this.data.filter(v => v.city === city && v.owner === ownerId); }
   async create(villain) {
     const id = Date.now().toString(); const newV = { ...villain, id }; this.data.push(newV); return newV;
   }

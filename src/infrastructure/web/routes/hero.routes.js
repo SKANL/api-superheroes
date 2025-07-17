@@ -1,4 +1,6 @@
 // Rutas para Hero
+import { authMiddleware } from '../../middleware/auth.middleware.js';
+
 /**
  * @swagger
  * tags:
@@ -125,8 +127,11 @@
  */
 import express from 'express';
 import { heroValidation } from '../../middleware/validation.middleware.js';
-export default controller => {
+export default (controller, ownershipMiddleware) => {
   const router = express.Router();
+
+  // Todas las rutas requieren autenticación
+  router.use(authMiddleware);
   /**
    * @swagger
    * /api/heroes:
@@ -231,7 +236,8 @@ export default controller => {
    *             schema:
    *               $ref: '#/components/schemas/Hero'
    */
-  router.get('/:id', controller.get.bind(controller));
+  // Operaciones individuales requieren ownership
+  router.get('/:id', ownershipMiddleware.validateHeroOwnership, controller.get.bind(controller));
   /**
    * @swagger
    * /api/heroes/{id}:
@@ -259,7 +265,7 @@ export default controller => {
    *             schema:
    *               $ref: '#/components/schemas/Hero'
    */
-  router.put('/:id', heroValidation.update, controller.update.bind(controller));
+  router.put('/:id', ownershipMiddleware.validateHeroOwnership, heroValidation.update, controller.update.bind(controller));
   /**
    * @swagger
    * /api/heroes/{id}:
@@ -277,6 +283,6 @@ export default controller => {
    *       204:
    *         description: Héroe eliminado
    */
-  router.delete('/:id', controller.delete.bind(controller));
+  router.delete('/:id', ownershipMiddleware.validateHeroOwnership, controller.delete.bind(controller));
   return router;
 };

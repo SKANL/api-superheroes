@@ -28,7 +28,7 @@ export class CreateVillainUseCase {
     teamAffinity,
     energyCost,
     damageReduction
-  }) {
+  }, userId) {
     // Validar value objects
     const aliasVO = new AliasValueObject(alias);
     const cityVO = new CityValueObject(city);
@@ -53,7 +53,8 @@ export class CreateVillainUseCase {
       critChance,
       teamAffinity,
       energyCost,
-      damageReduction
+      damageReduction,
+      owner: userId
     });
     // Guardar
     return await this.villainRepository.create(villain);

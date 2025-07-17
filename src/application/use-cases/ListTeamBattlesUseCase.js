@@ -4,8 +4,12 @@ export class ListTeamBattlesUseCase {
     this.teamBattleRepository = teamBattleRepository;
   }
 
-  async execute() {
-    return await this.teamBattleRepository.findAll();
+  /**
+   * @param {string} ownerId
+   */
+  async execute(ownerId) {
+    const all = await this.teamBattleRepository.findAll();
+    return all.filter(tb => tb.owner === ownerId);
   }
 }
 

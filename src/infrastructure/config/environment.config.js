@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 import dotenv from 'dotenv';
-import pkg from '../../../package.json' assert { type: 'json' };
+const pkg = require('../../../../package.json');
 
 export class EnvironmentConfig {
   constructor() {

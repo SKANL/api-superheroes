@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Heroes Manager</title>
-  <link rel="stylesheet" href="/swagger-custom/swagger-ui.css"/>
+  <link rel="stylesheet" href="../swagger-custom/swagger-ui.css"/>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
     .hidden { display: none; }
@@ -67,6 +67,20 @@
   </style>
 </head>
 <body>
+  <script type="module">
+    import authService from '/shared/auth.service.js';
+    if (!authService.isAuthenticated()) window.location = '/auth';
+    window.addEventListener('DOMContentLoaded', () => {
+      const btn = document.createElement('button');
+      btn.id = 'logout-btn';
+      btn.textContent = 'Cerrar sesión';
+      btn.style.position = 'absolute';
+      btn.style.top = '20px';
+      btn.style.right = '20px';
+      btn.addEventListener('click', () => { authService.logout(); window.location = '/auth'; });
+      document.body.appendChild(btn);
+    });
+  </script>
   <main class="container">
     <header>
       <h1 id="main-title" tabindex="0">Heroes Manager</h1>
@@ -282,19 +296,15 @@
       </form>
     </div>
     
-    <footer class="swagger-section" style="margin-top: 60px; padding: 30px 20px; background: linear-gradient(145deg, #e6f7ff, #bae7ff); border-top: 3px solid #1890ff; border-radius: 12px;">
-      <div class="swagger-header" style="text-align: center; margin-bottom: 30px;">
-        <h3>🦸‍♂️ Endpoints API de Héroes</h3>
-        <p>Prueba directamente los endpoints desde aquí:</p>
-      </div>
-      <section class="section" aria-labelledby="api-doc-title">
-        <div id="swagger-ui" style="max-height: 600px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 8px; background: white;"></div>
-      </section>
-    </footer>
-    
-    <!-- Swagger UI embebido -->
-    <script src="/swagger-custom/swagger-ui-bundle.js"></script>
-    <script src="/swagger-custom/swagger-ui-standalone-preset.js"></script>
+    <!-- Swagger UI para API Héroes -->
+    <section style="margin-top:40px;">
+      <h2>Documentación API Héroes</h2>
+      <div id="swagger-ui" style="border:1px solid #ddd; border-radius:8px; max-height:500px; overflow:auto;"></div>
+    </section>
+    <script src="../swagger-custom/swagger-ui-bundle.js"></script>
+    <script src="../swagger-custom/swagger-ui-standalone-preset.js"></script>
+    <script src="../shared/fetch-interceptor.js"></script>
+    <script src="../shared/swagger-auth.js"></script>
     <script src="swagger-app.js"></script>
     
     <script src="main.js"></script>

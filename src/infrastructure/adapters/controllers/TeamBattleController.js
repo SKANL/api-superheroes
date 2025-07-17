@@ -31,7 +31,11 @@ export class TeamBattleController {
 
   async create(req, res, next) {
     try {
-      const tb = await this.createTeamBattleUseCase.execute(req.body);
+      const requestData = {
+        ...req.body,
+        owner: req.user.id
+      };
+      const tb = await this.createTeamBattleUseCase.execute(requestData);
       res.status(201).json(tb);
     } catch (err) {
       next(err);
@@ -49,7 +53,7 @@ export class TeamBattleController {
 
   async list(req, res, next) {
     try {
-      const list = await this.listTeamBattlesUseCase.execute();
+      const list = await this.listTeamBattlesUseCase.execute(req.user.id);
       res.json(list);
     } catch (err) {
       next(err);

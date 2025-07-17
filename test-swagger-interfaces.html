@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificación de Interfaces Swagger</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .interface-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .interface-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            background: #fafafa;
+        }
+        .interface-card h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .status.checking {
+            background: #ffa500;
+            color: white;
+        }
+        .status.ok {
+            background: #28a745;
+            color: white;
+        }
+        .status.error {
+            background: #dc3545;
+            color: white;
+        }
+        .link {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .link:hover {
+            background: #0056b3;
+        }
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Verificación de Interfaces Swagger</h1>
+        <p>Esta página verifica que todas las interfaces de Swagger estén funcionando correctamente.</p>
+        
+        <div class="interface-grid">
+            <div class="interface-card">
+                <h3>🦸‍♂️ Heroes Manager</h3>
+                <div>
+                    <span class="status checking" id="heroes-status">Verificando...</span>
+                    <span id="heroes-message">Comprobando API y interfaz</span>
+                </div>
+                <a href="/heroes-manager" class="link" target="_blank">Ver Interfaz</a>
+                <a href="/api/docs/swagger-heroes.json" class="link" target="_blank">Ver JSON API</a>
+            </div>
+            
+            <div class="interface-card">
+                <h3>🦹‍♂️ Villains Manager</h3>
+                <div>
+                    <span class="status checking" id="villains-status">Verificando...</span>
+                    <span id="villains-message">Comprobando API y interfaz</span>
+                </div>
+                <a href="/villains-manager" class="link" target="_blank">Ver Interfaz</a>
+                <a href="/api/docs/swagger-villains.json" class="link" target="_blank">Ver JSON API</a>
+            </div>
+            
+            <div class="interface-card">
+                <h3>⚔️ Battles Manager</h3>
+                <div>
+                    <span class="status checking" id="battles-status">Verificando...</span>
+                    <span id="battles-message">Comprobando API y interfaz</span>
+                </div>
+                <a href="/battles-manager" class="link" target="_blank">Ver Interfaz</a>
+                <a href="/api/docs/swagger-battles.json" class="link" target="_blank">Ver JSON API</a>
+            </div>
+            
+            <div class="interface-card">
+                <h3>🏟️ Team Battles Manager</h3>
+                <div>
+                    <span class="status checking" id="team-battles-status">Verificando...</span>
+                    <span id="team-battles-message">Comprobando API y interfaz</span>
+                </div>
+                <a href="/team-battles-manager" class="link" target="_blank">Ver Interfaz</a>
+                <a href="/api/docs/swagger-team-battles.json" class="link" target="_blank">Ver JSON API</a>
+            </div>
+        </div>
+        
+        <div class="results" id="results">
+            <h3>📊 Resultados de la verificación:</h3>
+            <ul id="results-list">
+                <li>Iniciando verificación...</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        async function checkEndpoint(url) {
+            try {
+                const response = await fetch(url);
+                return {
+                    ok: response.ok,
+                    status: response.status,
+                    contentType: response.headers.get('content-type')
+                };
+            } catch (error) {
+                return {
+                    ok: false,
+                    error: error.message
+                };
+            }
+        }
+
+        async function checkSwaggerInterface(name, apiUrl, interfaceUrl) {
+            const statusEl = document.getElementById(`${name}-status`);
+            const messageEl = document.getElementById(`${name}-message`);
+            const resultsList = document.getElementById('results-list');
+            
+            try {
+                // Verificar endpoint JSON
+                const apiResult = await checkEndpoint(apiUrl);
+                
+                if (apiResult.ok) {
+                    // Verificar que sea JSON válido
+                    const response = await fetch(apiUrl);
+                    const data = await response.json();
+                    
+                    if (data.openapi && data.paths) {
+                        statusEl.className = 'status ok';
+                        statusEl.textContent = 'OK';
+                        messageEl.textContent = `API funcionando - ${Object.keys(data.paths).length} endpoints encontrados`;
+                        
+                        const listItem = document.createElement('li');
+                        listItem.innerHTML = `✅ <strong>${name.charAt(0).toUpperCase() + name.slice(1)}</strong>: API funcionando correctamente (${Object.keys(data.paths).length} endpoints)`;
+                        resultsList.appendChild(listItem);
+                    } else {
+                        throw new Error('JSON de API inválido');
+                    }
+                } else {
+                    throw new Error(`API error: ${apiResult.status} ${apiResult.error || ''}`);
+                }
+                
+            } catch (error) {
+                statusEl.className = 'status error';
+                statusEl.textContent = 'ERROR';
+                messageEl.textContent = error.message;
+                
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `❌ <strong>${name.charAt(0).toUpperCase() + name.slice(1)}</strong>: ${error.message}`;
+                resultsList.appendChild(listItem);
+            }
+        }
+
+        async function runAllChecks() {
+            const resultsList = document.getElementById('results-list');
+            resultsList.innerHTML = '<li>🔄 Iniciando verificación de todas las interfaces...</li>';
+            
+            const interfaces = [
+                { name: 'heroes', api: '/api/docs/swagger-heroes.json', interface: '/heroes-manager' },
+                { name: 'villains', api: '/api/docs/swagger-villains.json', interface: '/villains-manager' },
+                { name: 'battles', api: '/api/docs/swagger-battles.json', interface: '/battles-manager' },
+                { name: 'team-battles', api: '/api/docs/swagger-team-battles.json', interface: '/team-battles-manager' }
+            ];
+            
+            for (const iface of interfaces) {
+                await checkSwaggerInterface(iface.name, iface.api, iface.interface);
+                await new Promise(resolve => setTimeout(resolve, 500)); // Pequeña pausa entre verificaciones
+            }
+            
+            const summary = document.createElement('li');
+            summary.innerHTML = '<strong>🎉 Verificación completada!</strong>';
+            resultsList.appendChild(summary);
+        }
+
+        // Ejecutar verificaciones al cargar la página
+        document.addEventListener('DOMContentLoaded', runAllChecks);
+    </script>
+</body>
+</html>

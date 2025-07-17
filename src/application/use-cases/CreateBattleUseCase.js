@@ -9,7 +9,7 @@ export class CreateBattleUseCase {
     this.villainRepository = villainRepository;
   }
 
-  async execute({ heroId, villainId, mode = 'manual', location = null }) {
+  async execute({ heroId, villainId, mode = 'manual', location = null, owner }) {
     if (!heroId || !villainId)
       throw new Error('heroId and villainId are required');
     // Obtener entidades
@@ -38,6 +38,7 @@ export class CreateBattleUseCase {
         { id: heroId, name: hero.name, alias: hero.alias, hpCurrent: hero.health, hpMax: hero.health, isAlive: true, type: 'hero' },
         { id: villainId, name: villain.name, alias: villain.alias, hpCurrent: villain.health, hpMax: villain.health, isAlive: true, type: 'villain' }
       ],
+      owner: owner
     });
     // Guardar
     return await this.battleRepository.create(battle);

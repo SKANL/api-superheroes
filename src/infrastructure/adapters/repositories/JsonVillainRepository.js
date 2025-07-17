@@ -37,6 +37,16 @@ export class JsonVillainRepository {
     return data.filter(v => v.city === city);
   }
 
+  async findByOwner(ownerId) {
+    const data = await this._read();
+    return data.filter(v => v.owner === ownerId);
+  }
+
+  async findByCityAndOwner(city, ownerId) {
+    const data = await this._read();
+    return data.filter(v => v.city === city && v.owner === ownerId);
+  }
+
   async create(villain) {
     const data = await this._read();
     const id = Date.now().toString();

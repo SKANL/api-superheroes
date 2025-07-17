@@ -22,6 +22,7 @@ import { CustomError } from '../../shared/exceptions/CustomError.js';
  * @property {number} teamAffinity - Afinidad con el equipo (-100 a 100)
  * @property {number} energyCost - Costo de energía para habilidades especiales
  * @property {number} damageReduction - Reducción de daño (0-100)
+ * @property {string} owner - ID del usuario propietario del villano
  */
 export class Villain {
   constructor({ 
@@ -42,10 +43,14 @@ export class Villain {
     critChance = 10,
     teamAffinity = 0,
     energyCost = 20,
-    damageReduction = 0
+    damageReduction = 0,
+    owner
   }) {
     if (!name || !alias) {
       throw new CustomError('Name and alias are required for Villain', 400);
+    }
+    if (!owner) {
+      throw new CustomError('Owner is required for Villain', 400);
     }
     
     // Campos básicos
@@ -53,6 +58,7 @@ export class Villain {
     this.name = name;
     this.alias = alias;
     this.city = city;
+    this.owner = owner;
     
     // Salud máxima y actual para el villano
     this.hpMax = this._validateNumber(health, 'hpMax', 1, 1000);

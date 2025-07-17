@@ -3,6 +3,8 @@ import { ServerConfig } from './server.config.js';
 import { JsonHeroRepository } from '../adapters/repositories/JsonHeroRepository.js';
 import { JsonVillainRepository } from '../adapters/repositories/JsonVillainRepository.js';
 import { JsonBattleRepository } from '../adapters/repositories/JsonBattleRepository.js';
+import { MongoBattleRepository } from '../adapters/repositories/MongoBattleRepository.js';
+import { MongoTeamBattleRepository } from '../adapters/repositories/MongoTeamBattleRepository.js';
 import { InMemoryHeroRepository } from '../adapters/repositories/InMemoryHeroRepository.js';
 import { InMemoryVillainRepository } from '../adapters/repositories/InMemoryVillainRepository.js';
 import { InMemoryBattleRepository } from '../adapters/repositories/InMemoryBattleRepository.js';
@@ -26,6 +28,8 @@ import { ListBattlesByVillainUseCase } from '../../application/use-cases/ListBat
 import { PerformBattleAttackUseCase } from '../../application/use-cases/PerformBattleAttackUseCase.js';
 import { FinishBattleUseCase } from '../../application/use-cases/FinishBattleUseCase.js';
 import { JsonTeamBattleRepository } from '../adapters/repositories/JsonTeamBattleRepository.js';
+import { MongoUserRepository } from '../adapters/repositories/MongoUserRepository.js';
+import { InMemoryUserRepository } from '../adapters/repositories/InMemoryUserRepository.js';
 import { InMemoryTeamBattleRepository } from '../adapters/repositories/InMemoryTeamBattleRepository.js';
 import { CreateTeamBattleUseCase } from '../../application/use-cases/CreateTeamBattleUseCase.js';
 import { GetTeamBattleUseCase } from '../../application/use-cases/GetTeamBattleUseCase.js';
@@ -44,10 +48,21 @@ import { TeamBattleController } from '../adapters/controllers/TeamBattleControll
 import routesConfig from './routes.config.js';
 import { CityController } from '../adapters/controllers/city.controller.js';
 import { SwaggerConfig } from './swagger.config.js';
+import { MongoDBConfig } from './mongodb.config.js';
 import express from 'express';
 import path from 'path';
 import { PerformAttackUseCase } from '../../application/use-cases/PerformAttackUseCase.js';
 import { TeamBattleService } from '../../domain/services/TeamBattleService.js';
+import { RegisterUserUseCase } from '../../application/use-cases/auth/RegisterUserUseCase.js';
+import { LoginUserUseCase } from '../../application/use-cases/auth/LoginUserUseCase.js';
+import { GetUserProfileUseCase } from '../../application/use-cases/auth/GetUserProfileUseCase.js';
+import { AuthController } from '../adapters/controllers/auth.controller.js';
+import { authMiddleware } from '../middleware/auth.middleware.js';
+import { ownershipMiddlewareFactory } from '../middleware/ownership.middleware.js';
+import { ValidateBattleOwnershipUseCase } from '../../application/use-cases/ValidateBattleOwnershipUseCase.js';
+import { ValidateTeamBattleOwnershipUseCase } from '../../application/use-cases/ValidateTeamBattleOwnershipUseCase.js';
+import { ValidateHeroOwnershipUseCase } from '../../application/use-cases/ValidateHeroOwnershipUseCase.js';
+import { ValidateVillainOwnershipUseCase } from '../../application/use-cases/ValidateVillainOwnershipUseCase.js';
 
 /**
  * Crea y configura el servidor Express con rutas y middleware.
@@ -59,16 +74,36 @@ export function createApp() {
   server.setupMiddleware();
 
   const isTestEnv = process.env.NODE_ENV === 'test';
-  const heroRepo = isTestEnv ? new InMemoryHeroRepository() : new JsonHeroRepository();
-  const villainRepo = isTestEnv ? new InMemoryVillainRepository() : new JsonVillainRepository();
-  const battleRepo = isTestEnv ? new InMemoryBattleRepository() : new JsonBattleRepository();
-  const teamBattleRepo = isTestEnv ? new InMemoryTeamBattleRepository() : new JsonTeamBattleRepository();
+  // Repositorios de dominio
+  const heroRepo = isTestEnv
+    ? new InMemoryHeroRepository()
+    : new JsonHeroRepository();
+  const villainRepo = isTestEnv
+    ? new InMemoryVillainRepository()
+    : new JsonVillainRepository();
+  const battleRepo = isTestEnv
+    ? new InMemoryBattleRepository()
+    : process.env.DB_TYPE === 'mongodb'
+      ? new MongoBattleRepository()
+      : new JsonBattleRepository();
+  const teamBattleRepo = isTestEnv
+    ? new InMemoryTeamBattleRepository()
+    : process.env.DB_TYPE === 'mongodb'
+      ? new MongoTeamBattleRepository()
+      : new JsonTeamBattleRepository();
+  const userRepo = isTestEnv
+    ? new InMemoryUserRepository()
+    : new MongoUserRepository();
 
   // Swagger docs
   const swagger = new SwaggerConfig();
   swagger.setup(server.app);
 
   // Use cases
+  // Autenticación
+  const registerUserUseCase = new RegisterUserUseCase(userRepo);
+  const loginUserUseCase = new LoginUserUseCase(userRepo);
+  const getUserProfileUseCase = new GetUserProfileUseCase(userRepo);
   const createHeroUseCase = new CreateHeroUseCase(heroRepo);
   const getHeroUseCase = new GetHeroUseCase(heroRepo);
   const listHeroesUseCase = new ListHeroesUseCase(heroRepo);
@@ -107,7 +142,20 @@ export function createApp() {
     villainRepository: villainRepo
   });
 
+  // Ownership middleware factory con todos los repositorios
+  const ownershipMiddleware = ownershipMiddlewareFactory({
+    battleRepository: battleRepo,
+    teamBattleRepository: teamBattleRepo,
+    heroRepository: heroRepo,
+    villainRepository: villainRepo
+  });
+
   // Controllers
+  const authController = new AuthController({
+    registerUserUseCase,
+    loginUserUseCase,
+    getUserProfileUseCase
+  });
   const teamBattleController = new TeamBattleController({
     createTeamBattleUseCase,
     getTeamBattleUseCase,
@@ -135,11 +183,36 @@ export function createApp() {
 
   // Rutas
   const cityController = new CityController();
-  const routes = routesConfig({ hero: heroController, villain: villainController, battle: battleController, teamBattle: teamBattleController, city: cityController }, server.app);
+  const routes = routesConfig(
+    {
+      auth: authController,
+      hero: heroController,
+      villain: villainController,
+      battle: battleController,
+      teamBattle: teamBattleController,
+      city: cityController
+    },
+    server.app,
+    ownershipMiddleware
+  );
   server.setupRoutes(routes);
   server.setupErrorHandling();
 
-  // ...existing code...
+  // Inicializar conexión con MongoDB
+  if (process.env.NODE_ENV !== 'test') {
+    const mongodb = new MongoDBConfig();
+    mongodb.connect().then((connection) => {
+      if (connection) {
+        mongodb.setupConnectionHooks();
+        console.log('🚀 Sistema listo con base de datos MongoDB');
+      } else {
+        console.log('⚠️ Sistema funcionando en modo degradado (sin base de datos)');
+        console.log('   Algunas funcionalidades no estarán disponibles');
+      }
+    }).catch(err => {
+      console.error('❌ Error crítico con MongoDB:', err);
+    });
+  }
 
   return server;
 }
