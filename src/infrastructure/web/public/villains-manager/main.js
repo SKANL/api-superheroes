@@ -60,7 +60,15 @@ document.addEventListener('DOMContentLoaded', () => {
       defense: parseInt(document.getElementById('defense').value),
       specialAbility: document.getElementById('specialAbility').value,
       speed: parseInt(document.getElementById('speed').value),
-      critChance: parseInt(document.getElementById('critChance').value)
+      critChance: parseInt(document.getElementById('critChance').value),
+      isAlive: document.getElementById('isAlive').value === 'true',
+      roundsWon: parseInt(document.getElementById('roundsWon').value),
+      damage: parseInt(document.getElementById('damage').value),
+      status: document.getElementById('status').value,
+      stamina: parseInt(document.getElementById('stamina').value),
+      teamAffinity: parseInt(document.getElementById('teamAffinity').value),
+      energyCost: parseInt(document.getElementById('energyCost').value),
+      damageReduction: parseInt(document.getElementById('damageReduction').value)
     };
     
     try {
@@ -104,7 +112,15 @@ document.addEventListener('DOMContentLoaded', () => {
       defense: parseInt(document.getElementById('editDefense').value),
       specialAbility: document.getElementById('editSpecialAbility').value,
       speed: parseInt(document.getElementById('editSpeed').value),
-      critChance: parseInt(document.getElementById('editCritChance').value)
+      critChance: parseInt(document.getElementById('editCritChance').value),
+      isAlive: document.getElementById('editIsAlive').value === 'true',
+      roundsWon: parseInt(document.getElementById('editRoundsWon').value),
+      damage: parseInt(document.getElementById('editDamage').value),
+      status: document.getElementById('editStatus').value,
+      stamina: parseInt(document.getElementById('editStamina').value),
+      teamAffinity: parseInt(document.getElementById('editTeamAffinity').value),
+      energyCost: parseInt(document.getElementById('editEnergyCost').value),
+      damageReduction: parseInt(document.getElementById('editDamageReduction').value)
     };
     
     try {
@@ -220,18 +236,26 @@ document.addEventListener('DOMContentLoaded', () => {
       const response = await fetch(`/api/villains/${id}`);
       const villain = await response.json();
       
-      // Rellenar el formulario de edición
+      // Rellenar el formulario de edición con todos los campos
       document.getElementById('editVillainId').value = villain.id;
       document.getElementById('editName').value = villain.name;
       document.getElementById('editAlias').value = villain.alias;
       document.getElementById('editCity').value = villain.city;
       document.getElementById('editTeam').value = villain.team || '';
-      document.getElementById('editHealth').value = villain.health;
-      document.getElementById('editAttack').value = villain.attack;
-      document.getElementById('editDefense').value = villain.defense;
-      document.getElementById('editSpecialAbility').value = villain.specialAbility;
-      document.getElementById('editSpeed').value = villain.speed;
-      document.getElementById('editCritChance').value = villain.critChance;
+      document.getElementById('editHealth').value = villain.health || villain.hpMax || 100;
+      document.getElementById('editAttack').value = villain.attack || 50;
+      document.getElementById('editDefense').value = villain.defense || 30;
+      document.getElementById('editSpecialAbility').value = villain.specialAbility || 'Dark Attack';
+      document.getElementById('editSpeed').value = villain.speed || 50;
+      document.getElementById('editCritChance').value = villain.critChance || 10;
+      document.getElementById('editIsAlive').value = villain.isAlive !== false ? 'true' : 'false';
+      document.getElementById('editRoundsWon').value = villain.roundsWon || 0;
+      document.getElementById('editDamage').value = villain.damage || 0;
+      document.getElementById('editStatus').value = villain.status || 'normal';
+      document.getElementById('editStamina').value = villain.stamina || 100;
+      document.getElementById('editTeamAffinity').value = villain.teamAffinity || 0;
+      document.getElementById('editEnergyCost').value = villain.energyCost || 20;
+      document.getElementById('editDamageReduction').value = villain.damageReduction || 0;
       
       // Mostrar formulario de edición
       viewVillainsDiv.classList.add('hidden');

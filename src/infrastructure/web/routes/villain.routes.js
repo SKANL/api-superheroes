@@ -28,6 +28,10 @@ import { authMiddleware } from '../../middleware/auth.middleware.js';
  *         city:
  *           type: string
  *           example: "Ciudad Gótica"
+ *         team:
+ *           type: string
+ *           example: "Liga de la Maldad"
+ *           description: "Equipo al que pertenece el villano"
  *         health:
  *           type: integer
  *           minimum: 1
@@ -140,18 +144,32 @@ export default (controller, ownershipMiddleware) => {
    *       content:
    *         application/json:
    *           schema:
-   *             type: object
-   *             required:
-   *               - name
-   *               - city
-   *             properties:
-   *               name:
-   *                 type: string
-   *               city:
-   *                 type: string
+   *             $ref: '#/components/schemas/Villain'
+   *           example:
+   *             name: "El Rata"
+   *             alias: "Rata"
+   *             city: "Ciudad Gótica"
+   *             health: 100
+   *             attack: 75
+   *             defense: 45
+   *             specialAbility: "Ataque tóxico"
+   *             isAlive: true
+   *             roundsWon: 0
+   *             damage: 0
+   *             status: "normal"
+   *             stamina: 100
+   *             speed: 60
+   *             critChance: 20
+   *             teamAffinity: -10
+   *             energyCost: 35
+   *             damageReduction: 5
    *     responses:
    *       201:
    *         description: Villano creado exitosamente
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Villain'
    *       400:
    *         description: Datos inválidos
    */
@@ -232,20 +250,20 @@ export default (controller, ownershipMiddleware) => {
    *         required: true
    *         schema:
    *           type: string
+   *         description: ID del villano
    *     requestBody:
    *       required: true
    *       content:
    *         application/json:
    *           schema:
-   *             type: object
-   *             properties:
-   *               name:
-   *                 type: string
-   *               city:
-   *                 type: string
+   *             $ref: '#/components/schemas/Villain'
    *     responses:
    *       200:
    *         description: Villano actualizado exitosamente
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Villain'
    *       400:
    *         description: Datos inválidos
    *       404:

@@ -244,6 +244,49 @@
           <label for="editCritChance">Probabilidad de Crítico (%):</label>
           <input type="number" id="editCritChance" min="0" max="100">
         </div>
+        <!-- Campos adicionales para el formulario de edición -->
+        <div class="form-group">
+          <label for="editIsAlive">Está vivo:</label>
+          <select id="editIsAlive">
+            <option value="true" selected>Sí</option>
+            <option value="false">No</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="editRoundsWon">Rondas Ganadas:</label>
+          <input type="number" id="editRoundsWon" min="0" value="0">
+        </div>
+        <div class="form-group">
+          <label for="editDamage">Daño:</label>
+          <input type="number" id="editDamage" min="0" value="0">
+        </div>
+        <div class="form-group">
+          <label for="editStatus">Estado:</label>
+          <select id="editStatus">
+            <option value="normal" selected>normal</option>
+            <option value="congelado">congelado</option>
+            <option value="envenenado">envenenado</option>
+            <option value="fortalecido">fortalecido</option>
+            <option value="debilitado">debilitado</option>
+            <option value="paralizado">paralizado</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="editStamina">Stamina:</label>
+          <input type="number" id="editStamina" min="0" value="100">
+        </div>
+        <div class="form-group">
+          <label for="editTeamAffinity">Afinidad de Equipo:</label>
+          <input type="number" id="editTeamAffinity" min="-100" max="100" value="0">
+        </div>
+        <div class="form-group">
+          <label for="editEnergyCost">Costo de Energía:</label>
+          <input type="number" id="editEnergyCost" min="0" max="100" value="0">
+        </div>
+        <div class="form-group">
+          <label for="editDamageReduction">Reducción de Daño (%):</label>
+          <input type="number" id="editDamageReduction" min="0" max="100" value="0">
+        </div>
         <div class="actions">
           <button type="submit">Guardar Cambios</button>
           <button type="button" id="cancelEdit">Cancelar</button>
