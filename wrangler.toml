@@ -1,0 +1,16 @@
+name = "api-superheroes"
+main = "index.js"
+compatibility_date = "2025-07-18"
+
+[env.production]
+name = "api-superheroes"
+
+[[env.production.services]]
+binding = "DB"
+service = "mongodb"
+
+[build]
+command = "npm install"
+
+[vars]
+NODE_ENV = "production"

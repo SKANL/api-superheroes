@@ -6,7 +6,7 @@
  */
 
 // Establecer variables de entorno
-process.env.NODE_ENV = 'development';
+process.env.NODE_ENV = 'production';
 process.env.DB_TYPE = 'mongodb';
 process.env.PORT = process.env.PORT || '3443';
 
