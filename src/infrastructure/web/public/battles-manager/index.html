@@ -115,6 +115,143 @@
     .character-select > div {
       width: 48%;
     }
+    /* Estilos para el estado de la batalla */
+    .battle-status {
+      font-weight: bold;
+      font-size: 1.1em;
+      margin: 10px 0;
+      padding: 8px 16px;
+      border-radius: 6px;
+      text-align: center;
+      border: 2px solid transparent;
+    }
+    .battle-status.ongoing {
+      background-color: #e6fffb;
+      color: #00b37e;
+      border-color: #00b37e;
+    }
+    .battle-status.finished {
+      background-color: #fff1f0;
+      color: #ff4d4f;
+      border-color: #ff4d4f;
+    }
+    /* Estilos para HP y estado de vida */
+    .hp-current {
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+    .hp-high {
+      color: #52c41a; /* Verde para HP alto */
+    }
+    .hp-medium {
+      color: #faad14; /* Amarillo para HP medio */
+    }
+    .hp-low {
+      color: #ff4d4f; /* Rojo para HP bajo */
+    }
+    .alive-status {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.9em;
+      font-weight: bold;
+      margin-left: 8px;
+    }
+    .alive-status.alive {
+      background-color: #f6ffed;
+      color: #52c41a;
+      border: 1px solid #52c41a;
+    }
+    .alive-status.dead {
+      background-color: #fff1f0;
+      color: #ff4d4f;
+      border: 1px solid #ff4d4f;
+    }
+    /* Estilos para mensajes de ataque */
+    .attack-message {
+      padding: 8px 12px;
+      margin: 5px 0;
+      border-radius: 4px;
+      border-left: 4px solid #1890ff;
+      background-color: #f0f8ff;
+      font-size: 0.95em;
+    }
+    .attack-message.critical {
+      border-left-color: #ff4d4f;
+      background-color: #fff1f0;
+    }
+    .attack-message.normal {
+      border-left-color: #52c41a;
+      background-color: #f6ffed;
+    }
+    /* Estilos para mensaje de batalla terminada */
+    .battle-finished-message {
+      background-color: #fffbe6;
+      color: #d48806;
+      border: 2px solid #faad14;
+      padding: 12px 16px;
+      border-radius: 8px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.1em;
+      margin: 15px 0;
+      box-shadow: 0 2px 4px rgba(212, 136, 6, 0.1);
+    }
+    .character-info {
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+    }
+    .character-info.hero {
+      background-color: #e6f7ff;
+      border-color: #1890ff;
+    }
+    .character-info.villain {
+      background-color: #ffe6e6;
+      border-color: #ff4d4f;
+    }
+    .character-name {
+      font-size: 1.2em;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .character-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .stat-item {
+      font-size: 0.9em;
+    }
+    .stat-label {
+      font-weight: bold;
+      color: #666;
+    }
+    /* Estilos adicionales para daño y ataques */
+    .damage-amount {
+      font-weight: bold;
+      color: #ff4d4f;
+      background-color: #fff1f0;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .attack-entry {
+      margin: 8px 0;
+      padding: 8px 12px;
+      border-radius: 4px;
+      border-left: 3px solid #1890ff;
+      background-color: #f0f8ff;
+    }
+    .attack-entry.critical {
+      border-left-color: #ff4d4f;
+      background-color: #fff1f0;
+    }
+    .attack-entry small {
+      color: #666;
+      font-size: 0.85em;
+    }
   </style>
 </head>
 <body>

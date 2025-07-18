@@ -12,7 +12,7 @@ import { CustomError } from '../../shared/exceptions/CustomError.js';
  * @property {string} owner
  */
 export class Battle {
-  constructor({ id, heroId, villainId, date, result, mode, location, rounds, attackHistory, currentRoundIndex, status, characters, owner }) {
+  constructor({ id, heroId, villainId, date, result, mode, location, rounds, attackHistory, currentRoundIndex, status, characters, owner, hero, villain }) {
     if (!heroId || !villainId) {
       throw new CustomError(
         'Both heroId and villainId are required for a Battle',
@@ -35,6 +35,9 @@ export class Battle {
     this.characters = Array.isArray(characters) ? characters : [];
     this.result = result || null; // 'hero' | 'villain' | 'draw' | null
     this.owner = owner;
+    // Add populated hero and villain objects
+    this.hero = hero || null;
+    this.villain = villain || null;
   }
 }
 

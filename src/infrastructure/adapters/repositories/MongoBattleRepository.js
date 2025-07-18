@@ -4,12 +4,15 @@ import { BattleRepository } from '../../../application/interfaces/repositories/B
 
 export class MongoBattleRepository extends BattleRepository {
   async findById(id) {
-    const doc = await BattleModel.findById(id).lean();
+    const doc = await BattleModel.findById(id)
+      .populate('heroId')
+      .populate('villainId')
+      .lean();
     if (!doc) return null;
     return new Battle({
       id: doc._id.toString(),
-      heroId: doc.heroId.toString(),
-      villainId: doc.villainId.toString(),
+      heroId: doc.heroId._id.toString(),
+      villainId: doc.villainId._id.toString(),
       date: doc.date,
       result: doc.result,
       mode: doc.mode,
@@ -19,16 +22,22 @@ export class MongoBattleRepository extends BattleRepository {
       currentRoundIndex: doc.currentRoundIndex,
       status: doc.status,
       characters: doc.characters,
-      owner: doc.owner.toString()
+      owner: doc.owner.toString(),
+      // Add populated hero and villain data
+      hero: doc.heroId,
+      villain: doc.villainId
     });
   }
 
   async findAll() {
-    const docs = await BattleModel.find().lean();
+    const docs = await BattleModel.find()
+      .populate('heroId')
+      .populate('villainId')
+      .lean();
     return docs.map(doc => new Battle({
       id: doc._id.toString(),
-      heroId: doc.heroId.toString(),
-      villainId: doc.villainId.toString(),
+      heroId: doc.heroId._id.toString(),
+      villainId: doc.villainId._id.toString(),
       date: doc.date,
       result: doc.result,
       mode: doc.mode,
@@ -38,16 +47,22 @@ export class MongoBattleRepository extends BattleRepository {
       currentRoundIndex: doc.currentRoundIndex,
       status: doc.status,
       characters: doc.characters,
-      owner: doc.owner.toString()
+      owner: doc.owner.toString(),
+      // Add populated hero and villain data
+      hero: doc.heroId,
+      villain: doc.villainId
     }));
   }
 
   async findByHeroId(heroId) {
-    const docs = await BattleModel.find({ heroId }).lean();
+    const docs = await BattleModel.find({ heroId })
+      .populate('heroId')
+      .populate('villainId')
+      .lean();
     return docs.map(doc => new Battle({
       id: doc._id.toString(),
-      heroId: doc.heroId.toString(),
-      villainId: doc.villainId.toString(),
+      heroId: doc.heroId._id.toString(),
+      villainId: doc.villainId._id.toString(),
       date: doc.date,
       result: doc.result,
       mode: doc.mode,
@@ -57,16 +72,22 @@ export class MongoBattleRepository extends BattleRepository {
       currentRoundIndex: doc.currentRoundIndex,
       status: doc.status,
       characters: doc.characters,
-      owner: doc.owner.toString()
+      owner: doc.owner.toString(),
+      // Add populated hero and villain data
+      hero: doc.heroId,
+      villain: doc.villainId
     }));
   }
 
   async findByVillainId(villainId) {
-    const docs = await BattleModel.find({ villainId }).lean();
+    const docs = await BattleModel.find({ villainId })
+      .populate('heroId')
+      .populate('villainId')
+      .lean();
     return docs.map(doc => new Battle({
       id: doc._id.toString(),
-      heroId: doc.heroId.toString(),
-      villainId: doc.villainId.toString(),
+      heroId: doc.heroId._id.toString(),
+      villainId: doc.villainId._id.toString(),
       date: doc.date,
       result: doc.result,
       mode: doc.mode,
@@ -76,7 +97,10 @@ export class MongoBattleRepository extends BattleRepository {
       currentRoundIndex: doc.currentRoundIndex,
       status: doc.status,
       characters: doc.characters,
-      owner: doc.owner.toString()
+      owner: doc.owner.toString(),
+      // Add populated hero and villain data
+      hero: doc.heroId,
+      villain: doc.villainId
     }));
   }
 

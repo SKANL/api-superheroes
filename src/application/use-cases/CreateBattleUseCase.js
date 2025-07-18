@@ -35,8 +35,30 @@ export class CreateBattleUseCase {
       currentRoundIndex: 0,
       status: 'in_progress',
       characters: [
-        { id: heroId, name: hero.name, alias: hero.alias, hpCurrent: hero.health, hpMax: hero.health, isAlive: true, type: 'hero' },
-        { id: villainId, name: villain.name, alias: villain.alias, hpCurrent: villain.health, hpMax: villain.health, isAlive: true, type: 'villain' }
+        { 
+          id: heroId, 
+          name: hero.name, 
+          alias: hero.alias, 
+          hpCurrent: hero.hpCurrent || hero.health || hero.hpMax || 100, 
+          hpMax: hero.hpMax || hero.health || 100, 
+          isAlive: true, 
+          type: 'hero',
+          attack: hero.attack || 50,
+          defense: hero.defense || 30,
+          critChance: hero.critChance || 10
+        },
+        { 
+          id: villainId, 
+          name: villain.name, 
+          alias: villain.alias, 
+          hpCurrent: villain.hpCurrent || villain.health || villain.hpMax || 100, 
+          hpMax: villain.hpMax || villain.health || 100, 
+          isAlive: true, 
+          type: 'villain',
+          attack: villain.attack || 50,
+          defense: villain.defense || 30,
+          critChance: villain.critChance || 10
+        }
       ],
       owner: owner
     });

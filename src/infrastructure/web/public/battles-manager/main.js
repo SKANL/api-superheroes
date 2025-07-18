@@ -69,15 +69,57 @@ document.addEventListener('DOMContentLoaded', () => {
   // Ataque
   attackBtn.addEventListener('click', async () => {
     try {
-      await fetch(`/api/battles/${currentBattle.id}/attack`, {
+      const response = await fetch(`/api/battles/${currentBattle.id}/attack`, {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({ attackType: attackTypeSelect.value })
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        if (response.status === 500 && errorData.error === 'Battle already finished') {
+          alert('La batalla ya ha terminado. No se pueden realizar más ataques.');
+          await viewBattleDetails(currentBattle.id); // Refresh to show current state
+          return;
+        }
+        throw new Error(errorData.error || 'Error durante el ataque');
+      }
+      
+      const result = await response.json();
+      
+      // Show attack result message
+      if (result.attackResult?.message) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'attack-message';
+        messageDiv.innerHTML = `<strong>Ataque realizado:</strong> ${result.attackResult.message}`;
+        
+        // Add to messages area if it exists
+        if (messagesDiv) {
+          messagesDiv.appendChild(messageDiv);
+          messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        // If battle finished, show completion message
+        if (result.attackResult.battleFinished) {
+          const finishMessageDiv = document.createElement('div');
+          finishMessageDiv.className = 'battle-finished-message';
+          finishMessageDiv.innerHTML = `<strong>¡Batalla terminada!</strong> Ganador: ${result.attackResult.battleResult === 'hero' ? 'Héroe' : result.attackResult.battleResult === 'villain' ? 'Villano' : 'Empate'}`;
+          if (messagesDiv) {
+            messagesDiv.appendChild(finishMessageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+          }
+          
+          // Disable attack button
+          attackBtn.disabled = true;
+          attackBtn.textContent = 'Batalla Terminada';
+        }
+      }
+      
+      // Refresh battle details
       await viewBattleDetails(currentBattle.id);
     } catch (err) {
       console.error('Error durante el ataque manual:', err);
-      alert('Error durante el ataque.');
+      alert('Error durante el ataque: ' + err.message);
     }
   });
   // Finalizar batalla manual
@@ -308,34 +350,43 @@ document.addEventListener('DOMContentLoaded', () => {
           resultText = 'En progreso';
       }
       
+      // Find current character states from characters array if available
+      const currentHero = battle.characters?.find(c => c.type === 'hero') || battle.hero;
+      const currentVillain = battle.characters?.find(c => c.type === 'villain') || battle.villain;
+      
       battleInfo.innerHTML = `
         <h3>Batalla #${battle.id}</h3>
         <p><strong>Fecha:</strong> ${new Date(battle.date).toLocaleDateString()}</p>
         <p><strong>Ubicación:</strong> ${battle.location || 'No especificada'}</p>
+        <p><strong>Estado:</strong> <span class="battle-status ${battle.status}">${battle.status === 'finished' ? 'Finalizada' : 'En progreso'}</span></p>
         
         <h3>Participantes</h3>
         <div class="hero-data">
-          <h4>${battle.hero?.name || 'Desconocido'} (${battle.hero?.alias || 'N/A'})</h4>
-          <p><strong>Ciudad:</strong> ${battle.hero?.city || 'No especificada'}</p>
+          <h4>${currentHero?.name || battle.hero?.name || 'Desconocido'} (${currentHero?.alias || battle.hero?.alias || 'N/A'})</h4>
+          <p><strong>Ciudad:</strong> ${currentHero?.city || battle.hero?.city || 'No especificada'}</p>
           <p><strong>Estadísticas:</strong></p>
           <ul>
-            <li>Salud: ${battle.hero?.health || 'N/A'}</li>
-            <li>Ataque: ${battle.hero?.attack || 'N/A'}</li>
-            <li>Defensa: ${battle.hero?.defense || 'N/A'}</li>
-            <li>Habilidad Especial: ${battle.hero?.specialAbility || 'N/A'}</li>
+            <li>Salud Máxima: ${currentHero?.hpMax || battle.hero?.hpMax || battle.hero?.health || 'N/A'}</li>
+            <li>Salud Actual: <span class="hp-current ${getHpClass(currentHero?.hpCurrent, currentHero?.hpMax)}">${currentHero?.hpCurrent !== undefined ? currentHero.hpCurrent : (battle.hero?.hpCurrent !== undefined ? battle.hero.hpCurrent : (battle.hero?.health || 'N/A'))}</span></li>
+            <li>Estado: <span class="alive-status ${getAliveStatus(currentHero)}">${getAliveText(currentHero)}</span></li>
+            <li>Ataque: ${currentHero?.attack || battle.hero?.attack || 'N/A'}</li>
+            <li>Defensa: ${currentHero?.defense || battle.hero?.defense || 'N/A'}</li>
+            <li>Habilidad Especial: ${currentHero?.specialAbility || battle.hero?.specialAbility || 'N/A'}</li>
           </ul>
           <p><strong>Daño causado:</strong> ${battle.heroDamage || 0}</p>
         </div>
         
         <div class="villain-data">
-          <h4>${battle.villain?.name || 'Desconocido'} (${battle.villain?.alias || 'N/A'})</h4>
-          <p><strong>Ciudad:</strong> ${battle.villain?.city || 'No especificada'}</p>
+          <h4>${currentVillain?.name || battle.villain?.name || 'Desconocido'} (${currentVillain?.alias || battle.villain?.alias || 'N/A'})</h4>
+          <p><strong>Ciudad:</strong> ${currentVillain?.city || battle.villain?.city || 'No especificada'}</p>
           <p><strong>Estadísticas:</strong></p>
           <ul>
-            <li>Salud: ${battle.villain?.health || 'N/A'}</li>
-            <li>Ataque: ${battle.villain?.attack || 'N/A'}</li>
-            <li>Defensa: ${battle.villain?.defense || 'N/A'}</li>
-            <li>Habilidad Especial: ${battle.villain?.specialAbility || 'N/A'}</li>
+            <li>Salud Máxima: ${currentVillain?.hpMax || battle.villain?.hpMax || battle.villain?.health || 'N/A'}</li>
+            <li>Salud Actual: <span class="hp-current ${getHpClass(currentVillain?.hpCurrent, currentVillain?.hpMax)}">${currentVillain?.hpCurrent !== undefined ? currentVillain.hpCurrent : (battle.villain?.hpCurrent !== undefined ? battle.villain.hpCurrent : (battle.villain?.health || 'N/A'))}</span></li>
+            <li>Estado: <span class="alive-status ${getAliveStatus(currentVillain)}">${getAliveText(currentVillain)}</span></li>
+            <li>Ataque: ${currentVillain?.attack || battle.villain?.attack || 'N/A'}</li>
+            <li>Defensa: ${currentVillain?.defense || battle.villain?.defense || 'N/A'}</li>
+            <li>Habilidad Especial: ${currentVillain?.specialAbility || battle.villain?.specialAbility || 'N/A'}</li>
           </ul>
           <p><strong>Daño causado:</strong> ${battle.villainDamage || 0}</p>
         </div>
@@ -344,16 +395,18 @@ document.addEventListener('DOMContentLoaded', () => {
           <strong>Resultado Final:</strong> ${resultText}
         </div>
         
-        ${battle.rounds ? `
-          <h3>Rondas</h3>
-          <ul>
-            ${battle.rounds.map(round => `
-              <li>
-                <p><strong>Ronda ${round.number}:</strong> ${round.description || 'Sin descripción'}</p>
-                <p><strong>Ganador de la ronda:</strong> ${round.winner || 'Indeterminado'}</p>
-              </li>
+        ${battle.attackHistory && battle.attackHistory.length > 0 ? `
+          <h3>Historial de Ataques (${battle.attackHistory.length} ataques - Ronda actual: ${battle.currentRoundIndex || 1})</h3>
+          <div class="attack-history">
+            ${battle.attackHistory.map((attack, index) => `
+              <div class="attack-entry attack-message ${attack.damage > 75 ? 'critical' : 'normal'}">
+                <strong>Ataque ${index + 1} (Ronda ${attack.round || Math.floor(index/2) + 1}):</strong> 
+                ${attack.attackerName || attack.attackerId} atacó a ${attack.targetName || attack.targetId} 
+                causando <span class="damage-amount">${attack.damage}</span> de daño 
+                <small>(HP después: ${attack.targetHpAfter})</small>
+              </div>
             `).join('')}
-          </ul>
+          </div>
         ` : ''}
       `;
       
@@ -443,5 +496,33 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (error) {
       alert(`Error: ${error.message}`);
     }
+  }
+  
+  // Helper functions for character status
+  function getHpClass(currentHp, maxHp) {
+    if (currentHp === undefined || currentHp === null || currentHp === 'N/A') return '';
+    if (maxHp === undefined || maxHp === null || maxHp === 'N/A') return '';
+    
+    const percentage = (currentHp / maxHp) * 100;
+    if (percentage > 70) return 'hp-high';
+    if (percentage > 30) return 'hp-medium';
+    return 'hp-low';
+  }
+  
+  function getAliveStatus(character) {
+    if (!character) return 'dead';
+    
+    // Check explicit isAlive property
+    if (character.isAlive !== undefined) {
+      return character.isAlive ? 'alive' : 'dead';
+    }
+    
+    // Fallback to HP check
+    const hp = character.hpCurrent !== undefined ? character.hpCurrent : character.health;
+    return (hp !== undefined && hp > 0) ? 'alive' : 'dead';
+  }
+  
+  function getAliveText(character) {
+    return getAliveStatus(character) === 'alive' ? 'Vivo' : 'Muerto';
   }
 });

@@ -13,6 +13,7 @@ const BattleSchema = new Schema({
   currentRoundIndex: { type: Number, default: 0 },
   status: { type: String, enum: ['in_progress', 'finished'], default: 'in_progress' },
   result: { type: String, enum: ['hero', 'villain', 'draw'], default: null },
+  characters: { type: Array, default: [] },
   owner: { type: Types.ObjectId, ref: 'User', required: true }
 });
 
