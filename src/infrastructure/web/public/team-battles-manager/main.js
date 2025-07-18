@@ -297,7 +297,34 @@ document.addEventListener('DOMContentLoaded', () => {
       // Traducir estado
       const stateMap = { heroes: 'Héroes ganaron', villains: 'Villanos ganaron', draw: 'Empate' };
       const stateES = stateMap[data.result] || data.result;
-      document.getElementById('resultTitle').textContent = `ID de batalla: ${battleId} · Resultado: ${stateES}`;
+      
+      // Calcular rondas jugadas desde el historial o desde la batalla actual
+      let roundsPlayed = 0;
+      if (data.battleHistory && data.battleHistory.rounds) {
+        roundsPlayed = data.battleHistory.rounds.length;
+      } else if (battle && battle.rounds) {
+        roundsPlayed = battle.rounds.length;
+      } else if (battle && battle.currentRoundIndex) {
+        roundsPlayed = battle.currentRoundIndex;
+      }
+      
+      document.getElementById('resultTitle').textContent = `¡Victoria de los ${stateES}!`;
+      
+      // Mostrar estadísticas con rondas jugadas
+      const heroesAlive = data.statistics.filter(c => c.type === 'hero' && c.isAlive).length;
+      const villainsAlive = data.statistics.filter(c => c.type === 'villain' && c.isAlive).length;
+      const totalHeroes = data.statistics.filter(c => c.type === 'hero').length;
+      const totalVillains = data.statistics.filter(c => c.type === 'villain').length;
+      
+      resultStats.innerHTML = `
+        <div class="battle-summary">
+          <h3>Resumen de la Batalla</h3>
+          <p><strong>Resultado:</strong> ${stateES}</p>
+          <p><strong>Rondas jugadas:</strong> ${roundsPlayed}</p>
+          <p><strong>Héroes sobrevivientes:</strong> ${heroesAlive}/${totalHeroes}</p>
+          <p><strong>Villanos sobrevivientes:</strong> ${villainsAlive}/${totalVillains}</p>
+        </div>
+      `;
       // Renderizar estadísticas recibidas
       resultStats.innerHTML = '';
       const grid = document.createElement('div');
@@ -317,8 +344,15 @@ document.addEventListener('DOMContentLoaded', () => {
       finishBtn.classList.add('hidden');
       
       // Mostrar historial de batalla si existe
-      if (data.battleHistory) {
+      if (data.battleHistory && (
+          (data.battleHistory.rounds && data.battleHistory.rounds.length > 0) ||
+          (data.battleHistory.attackHistory && data.battleHistory.attackHistory.length > 0)
+        )) {
         renderBattleHistory(data.battleHistory);
+        toggleHistoryBtn.classList.remove('hidden');
+      } else {
+        battleHistory.innerHTML = '<p style="text-align: center; color: #666;">No hay historial de batalla disponible.</p>';
+        toggleHistoryBtn.classList.add('hidden');
       }
     } catch (error) {
       console.error('Error al finalizar la batalla:', error);
@@ -330,8 +364,19 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderBattleHistory(historyData) {
     battleHistory.innerHTML = '';
     
+    let hasContent = false;
+    
     // Mostrar rondas si existen (modo automático)
     if (historyData.rounds && historyData.rounds.length > 0) {
+      hasContent = true;
+      const roundsSection = document.createElement('div');
+      roundsSection.className = 'rounds-section';
+      
+      const roundsHeader = document.createElement('h3');
+      roundsHeader.textContent = `Rondas de Batalla (${historyData.rounds.length} rondas)`;
+      roundsHeader.style.color = '#1890ff';
+      roundsSection.appendChild(roundsHeader);
+      
       historyData.rounds.forEach(round => {
         const roundDiv = document.createElement('div');
         roundDiv.className = 'round-section';
@@ -378,50 +423,64 @@ document.addEventListener('DOMContentLoaded', () => {
         
         roundDiv.appendChild(roundHeader);
         roundDiv.appendChild(actionsGrid);
-        battleHistory.appendChild(roundDiv);
+        roundsSection.appendChild(roundDiv);
       });
+      
+      battleHistory.appendChild(roundsSection);
     }
     
     // Mostrar ataques individuales si existen (modo manual)
     if (historyData.attackHistory && historyData.attackHistory.length > 0) {
-      const attacksDiv = document.createElement('div');
-      attacksDiv.className = 'round-section';
+      hasContent = true;
+      const attacksSection = document.createElement('div');
+      attacksSection.className = 'attacks-section';
       
-      const attacksHeader = document.createElement('div');
-      attacksHeader.className = 'round-header';
-      attacksHeader.innerHTML = '<span>Ataques Individuales</span>';
+      const attacksHeader = document.createElement('h3');
+      attacksHeader.textContent = `Ataques Individuales (${historyData.attackHistory.length} ataques)`;
+      attacksHeader.style.color = '#ff4d4f';
+      attacksSection.appendChild(attacksHeader);
       
       const attacksList = document.createElement('div');
+      attacksList.className = 'attacks-list';
+      
       historyData.attackHistory.forEach((attack, index) => {
         const attackDiv = document.createElement('div');
         attackDiv.className = 'action-item';
         
         // Encontrar nombres de atacante y objetivo desde los datos de batalla
-        const attackerName = battle.characters.find(c => c.id === attack.attackerId)?.alias || 
-                            battle.characters.find(c => c.id === attack.attackerId)?.name || 
+        const attackerName = battle?.characters?.find(c => c.id === attack.attackerId)?.alias || 
+                            battle?.characters?.find(c => c.id === attack.attackerId)?.name || 
                             attack.attackerId;
-        const targetName = battle.characters.find(c => c.id === attack.targetId)?.alias || 
-                          battle.characters.find(c => c.id === attack.targetId)?.name || 
+        const targetName = battle?.characters?.find(c => c.id === attack.targetId)?.alias || 
+                          battle?.characters?.find(c => c.id === attack.targetId)?.name || 
                           attack.targetId;
         
+        const timestamp = new Date(attack.timestamp).toLocaleTimeString();
+        
         attackDiv.innerHTML = `
-          <strong>Ataque ${index + 1}:</strong> 
-          ${attackerName} atacó a ${targetName} causando 
-          <span class="action-damage">${attack.damage}</span> de daño
-          <br><small>HP restante del objetivo: ${attack.targetHpAfter}</small>
+          <div class="attack-info">
+            <strong>Ataque ${index + 1}</strong> 
+            <span class="attack-time">(${timestamp})</span>
+          </div>
+          <div class="attack-details">
+            <span class="attacker-name">${attackerName}</span> atacó a 
+            <span class="target-name">${targetName}</span> causando 
+            <span class="action-damage">${attack.damage}</span> de daño
+          </div>
+          <div class="attack-result">
+            HP restante del objetivo: ${attack.targetHpAfter}
+          </div>
         `;
         attacksList.appendChild(attackDiv);
       });
       
-      attacksDiv.appendChild(attacksHeader);
-      attacksDiv.appendChild(attacksList);
-      battleHistory.appendChild(attacksDiv);
+      attacksSection.appendChild(attacksList);
+      battleHistory.appendChild(attacksSection);
     }
     
     // Si no hay historial
-    if ((!historyData.rounds || historyData.rounds.length === 0) && 
-        (!historyData.attackHistory || historyData.attackHistory.length === 0)) {
-      battleHistory.innerHTML = '<p style="text-align: center; color: #666;">No hay historial de batalla disponible.</p>';
+    if (!hasContent) {
+      battleHistory.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No hay historial de batalla disponible.</p>';
     }
   }
   
@@ -622,7 +681,7 @@ document.addEventListener('DOMContentLoaded', () => {
               }
               
               resultStats.innerHTML = `
-                <p><strong>Rondas jugadas:</strong> ${battle.currentRound}</p>
+                <p><strong>Rondas jugadas:</strong> ${battle.rounds ? battle.rounds.length : battle.currentRoundIndex || 0}</p>
                 <p><strong>Héroes sobrevivientes:</strong> ${heroesLeft}/${battle.characters.filter(c => c.type === 'hero').length}</p>
                 <p><strong>Villanos sobrevivientes:</strong> ${villainsLeft}/${battle.characters.filter(c => c.type === 'villain').length}</p>
               `;

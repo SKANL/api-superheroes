@@ -280,6 +280,8 @@ export class TeamBattleController {
         
         // Guardar batalla actualizada
         await this.updateTeamBattleUseCase.execute(req.params.id, battle);
+        
+        console.log(`Batalla finalizada: ${rounds.length} rondas jugadas, resultado: ${result}`);
       } else {
         // Modo manual: usar resultado ya establecido o calcular basado en personajes vivos
         if (battle.result && typeof battle.result === 'string' && battle.result !== 'ongoing') {
