@@ -35,6 +35,7 @@
     "security:fix": "npm audit fix",
     "swagger:copy-assets": "node scripts/copy-swagger-ui-assets.js",
     "migrate:add-owner": "node scripts/migrate-add-owner.js",
+    "migrate:json-to-mongodb": "node scripts/migrate-json-to-mongodb.js",
     "test:security": "jest tests/integration/security --testNamePattern='Security'"
   },
   "keywords": [

@@ -20,7 +20,12 @@ export class BattleController {
 
   async create(req, res, next) {
     try {
-      const battle = await this.createBattleUseCase.execute(req.body);
+      // Add the owner from the authenticated user
+      const battleData = {
+        ...req.body,
+        owner: req.user.id
+      };
+      const battle = await this.createBattleUseCase.execute(battleData);
       res.status(201).json(battle);
     } catch (err) {
       next(err);

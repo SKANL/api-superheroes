@@ -3,6 +3,8 @@ import { ServerConfig } from './server.config.js';
 import { JsonHeroRepository } from '../adapters/repositories/JsonHeroRepository.js';
 import { JsonVillainRepository } from '../adapters/repositories/JsonVillainRepository.js';
 import { JsonBattleRepository } from '../adapters/repositories/JsonBattleRepository.js';
+import { MongoHeroRepository } from '../adapters/repositories/MongoHeroRepository.js';
+import { MongoVillainRepository } from '../adapters/repositories/MongoVillainRepository.js';
 import { MongoBattleRepository } from '../adapters/repositories/MongoBattleRepository.js';
 import { MongoTeamBattleRepository } from '../adapters/repositories/MongoTeamBattleRepository.js';
 import { InMemoryHeroRepository } from '../adapters/repositories/InMemoryHeroRepository.js';
@@ -77,10 +79,14 @@ export function createApp() {
   // Repositorios de dominio
   const heroRepo = isTestEnv
     ? new InMemoryHeroRepository()
-    : new JsonHeroRepository();
+    : process.env.DB_TYPE === 'mongodb'
+      ? new MongoHeroRepository()
+      : new JsonHeroRepository();
   const villainRepo = isTestEnv
     ? new InMemoryVillainRepository()
-    : new JsonVillainRepository();
+    : process.env.DB_TYPE === 'mongodb'
+      ? new MongoVillainRepository()
+      : new JsonVillainRepository();
   const battleRepo = isTestEnv
     ? new InMemoryBattleRepository()
     : process.env.DB_TYPE === 'mongodb'

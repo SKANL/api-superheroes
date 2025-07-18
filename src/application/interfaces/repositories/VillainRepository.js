@@ -12,6 +12,12 @@ export class VillainRepository {
   async findByCity(city) {
     throw new Error('Not implemented');
   }
+  async findByOwner(ownerId) {
+    throw new Error('Not implemented');
+  }
+  async findByCityAndOwner(city, ownerId) {
+    throw new Error('Not implemented');
+  }
   async create(villain) {
     throw new Error('Not implemented');
   }

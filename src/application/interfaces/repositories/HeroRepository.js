@@ -12,6 +12,12 @@ export class HeroRepository {
   async findByCity(city) {
     throw new Error('Not implemented');
   }
+  async findByOwner(ownerId) {
+    throw new Error('Not implemented');
+  }
+  async findByCityAndOwner(city, ownerId) {
+    throw new Error('Not implemented');
+  }
   async create(hero) {
     throw new Error('Not implemented');
   }
