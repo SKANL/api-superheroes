@@ -15,7 +15,7 @@ export class ValidateTeamBattleOwnershipUseCase {
    * @returns {Promise<boolean>} - True si el usuario es propietario, false en caso contrario
    */
   async execute(teamBattleId, userId) {
-    const teamBattle = await this.teamBattleRepository.getById(teamBattleId);
+    const teamBattle = await this.teamBattleRepository.findById(teamBattleId);
     
     if (!teamBattle) {
       return false;
