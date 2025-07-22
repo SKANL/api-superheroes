@@ -127,17 +127,22 @@ import { authMiddleware } from '../../middleware/auth.middleware.js';
  */
 import express from 'express';
 import { heroValidation } from '../../middleware/validation.middleware.js';
-export default (controller, ownershipMiddleware) => {
+
+export default (controller, ownershipMiddleware, roleAuthMiddleware) => {
   const router = express.Router();
 
-  // Todas las rutas requieren autenticación
+  // Todas las rutas requieren autenticación y agregar rol del usuario
   router.use(authMiddleware);
+  router.use(roleAuthMiddleware.addUserRole);
+
   /**
    * @swagger
    * /api/heroes:
    *   post:
-   *     summary: Crear un nuevo héroe
+   *     summary: Crear un nuevo héroe (Solo administradores)
    *     tags: [Heroes]
+   *     security:
+   *       - bearerAuth: []
    *     requestBody:
    *       required: true
    *       content:
@@ -172,17 +177,22 @@ export default (controller, ownershipMiddleware) => {
    *               $ref: '#/components/schemas/Hero'
    *       400:
    *         description: Error de validación
+   *       403:
+   *         description: Se requieren permisos de administrador
    */
-  router.post('/', heroValidation.create, controller.create.bind(controller));
+  router.post('/', roleAuthMiddleware.requireAdmin, heroValidation.create, controller.create.bind(controller));
+
   /**
    * @swagger
    * /api/heroes:
    *   get:
-   *     summary: Listar todos los héroes
+   *     summary: Listar héroes accesibles (propios + de administradores)
    *     tags: [Heroes]
+   *     security:
+   *       - bearerAuth: []
    *     responses:
    *       200:
-   *         description: Lista de héroes
+   *         description: Lista de héroes accesibles
    *         content:
    *           application/json:
    *             schema:
@@ -191,12 +201,15 @@ export default (controller, ownershipMiddleware) => {
    *                 $ref: '#/components/schemas/Hero'
    */
   router.get('/', controller.list.bind(controller));
+
   /**
    * @swagger
    * /api/heroes/city/{city}:
    *   get:
-   *     summary: Listar héroes por ciudad
+   *     summary: Listar héroes por ciudad (accesibles por el usuario)
    *     tags: [Heroes]
+   *     security:
+   *       - bearerAuth: []
    *     parameters:
    *       - in: path
    *         name: city
@@ -206,7 +219,7 @@ export default (controller, ownershipMiddleware) => {
    *         description: Nombre de la ciudad
    *     responses:
    *       200:
-   *         description: Lista de héroes en la ciudad
+   *         description: Lista de héroes accesibles en la ciudad
    *         content:
    *           application/json:
    *             schema:
@@ -215,12 +228,15 @@ export default (controller, ownershipMiddleware) => {
    *                 $ref: '#/components/schemas/Hero'
    */
   router.get('/city/:city', controller.findByCity.bind(controller));
+
   /**
    * @swagger
    * /api/heroes/{id}:
    *   get:
    *     summary: Obtener un héroe por ID
    *     tags: [Heroes]
+   *     security:
+   *       - bearerAuth: []
    *     parameters:
    *       - in: path
    *         name: id
@@ -236,14 +252,20 @@ export default (controller, ownershipMiddleware) => {
    *             schema:
    *               $ref: '#/components/schemas/Hero'
    */
-  // Operaciones individuales requieren ownership
-  router.get('/:id', ownershipMiddleware.validateHeroOwnership, controller.get.bind(controller));
+  // Para ver un héroe específico, debe tener acceso (propio o de admin)
+  router.get('/:id', controller.get.bind(controller));
+
   /**
    * @swagger
    * /api/heroes/{id}:
    *   put:
    *     summary: Actualizar un héroe
+   *     description: |
+   *       - Administradores: pueden editar cualquier campo de cualquier héroe
+   *       - Usuarios: solo pueden editar campos específicos (team, status, stamina, hpCurrent) de héroes accesibles
    *     tags: [Heroes]
+   *     security:
+   *       - bearerAuth: []
    *     parameters:
    *       - in: path
    *         name: id
@@ -257,6 +279,11 @@ export default (controller, ownershipMiddleware) => {
    *         application/json:
    *           schema:
    *             $ref: '#/components/schemas/Hero'
+   *           example:
+   *             team: "Nuevo Equipo"
+   *             status: "fortalecido"
+   *             stamina: 95
+   *             hpCurrent: 85
    *     responses:
    *       200:
    *         description: Héroe actualizado
@@ -264,14 +291,19 @@ export default (controller, ownershipMiddleware) => {
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/Hero'
+   *       403:
+   *         description: Permisos insuficientes o campos no permitidos
    */
-  router.put('/:id', ownershipMiddleware.validateHeroOwnership, heroValidation.update, controller.update.bind(controller));
+  router.put('/:id', roleAuthMiddleware.checkEditPermissions, heroValidation.update, controller.update.bind(controller));
+
   /**
    * @swagger
    * /api/heroes/{id}:
    *   delete:
-   *     summary: Eliminar un héroe
+   *     summary: Eliminar un héroe (Solo administradores o propietarios)
    *     tags: [Heroes]
+   *     security:
+   *       - bearerAuth: []
    *     parameters:
    *       - in: path
    *         name: id
@@ -282,7 +314,10 @@ export default (controller, ownershipMiddleware) => {
    *     responses:
    *       204:
    *         description: Héroe eliminado
+   *       403:
+   *         description: Sin permisos para eliminar
    */
   router.delete('/:id', ownershipMiddleware.validateHeroOwnership, controller.delete.bind(controller));
+
   return router;
 };

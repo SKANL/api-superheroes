@@ -48,16 +48,19 @@ document.addEventListener('DOMContentLoaded', function() {
         const email = document.getElementById('register-email').value;
         const password = document.getElementById('register-password').value;
         const confirmPassword = document.getElementById('register-confirm-password').value;
+        const role = document.getElementById('register-role').value;
+        
         if (password !== confirmPassword) {
             showAlert('Las contraseñas no coinciden', 'danger');
             return;
         }
+        
         try {
-            await authService.register(username, email, password);
-            showAlert('Registro exitoso. Redirigiendo...', 'success');
-        setTimeout(() => {
-            window.location.href = '/dashboard';
-        }, 1000);
+            await authService.register(username, email, password, role);
+            showAlert(`Registro exitoso como ${role === 'admin' ? 'Administrador' : 'Usuario'}. Redirigiendo...`, 'success');
+            setTimeout(() => {
+                window.location.href = '/dashboard';
+            }, 1000);
         } catch (error) {
             showAlert(`Error: ${error.message}`, 'danger');
         }

@@ -42,9 +42,59 @@ export class JsonHeroRepository {
     return data.filter(h => h.owner === ownerId);
   }
 
+  /**
+   * Encuentra héroes por propietario o héroes de administradores
+   * Los usuarios pueden ver sus propios héroes + héroes creados por administradores
+   * @param {string} userId - ID del usuario
+   * @param {Object} userRepository - Repositorio de usuarios para verificar roles
+   * @returns {Promise<Array>} - Lista de héroes accesibles
+   */
+  async findAccessibleByUser(userId, userRepository) {
+    const data = await this._read();
+    const user = await userRepository.findById(userId);
+    
+    if (!user) return [];
+
+    if (user.role === 'admin') {
+      // Los administradores ven todos los héroes
+      return data;
+    }
+
+    // Los usuarios ven sus propios héroes + héroes de administradores
+    const accessibleHeroes = [];
+    
+    for (const hero of data) {
+      // Incluir héroes propios
+      if (hero.owner === userId) {
+        accessibleHeroes.push(hero);
+        continue;
+      }
+      
+      // Incluir héroes de administradores
+      const heroOwner = await userRepository.findById(hero.owner);
+      if (heroOwner && heroOwner.role === 'admin') {
+        accessibleHeroes.push(hero);
+      }
+    }
+    
+    return accessibleHeroes;
+  }
+
   async findByCityAndOwner(city, ownerId) {
     const data = await this._read();
     return data.filter(h => h.city === city && h.owner === ownerId);
+  }
+
+  /**
+   * Encuentra héroes por ciudad accesibles por el usuario
+   * @param {string} city - Ciudad
+   * @param {string} userId - ID del usuario
+   * @param {Object} userRepository - Repositorio de usuarios
+   * @returns {Promise<Array>} - Lista de héroes accesibles en la ciudad
+   */
+  async findByCityAccessibleByUser(city, userId, userRepository) {
+    const accessibleHeroes = await this.findAccessibleByUser(userId, userRepository);
+    return accessibleHeroes.filter(h => h.city === city);
   }
 
   async create(hero) {

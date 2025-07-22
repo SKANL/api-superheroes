@@ -9,13 +9,13 @@ import cityRoutes from '../web/routes/city.routes.js';
 import authRoutes from '../web/routes/auth.routes.js';
 import { ownershipMiddlewareFactory } from '../middleware/ownership.middleware.js';
 
-export default (controllers, app, ownershipMiddleware) => {
+export default (controllers, app, ownershipMiddleware, roleAuthMiddleware) => {
   return {
     health: healthRoutes,
     docs: docsRoutes(app),
     api: {
-      heroes: heroRoutes(controllers.hero, ownershipMiddleware),
-      villains: villainRoutes(controllers.villain, ownershipMiddleware),
+      heroes: heroRoutes(controllers.hero, ownershipMiddleware, roleAuthMiddleware),
+      villains: villainRoutes(controllers.villain, ownershipMiddleware, roleAuthMiddleware),
       battles: battleRoutes(controllers.battle, ownershipMiddleware),
       teamBattles: teamBattleRoutes(controllers.teamBattle, ownershipMiddleware),
       cities: cityRoutes(controllers.city),

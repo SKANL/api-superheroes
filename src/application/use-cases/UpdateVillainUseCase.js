@@ -29,7 +29,8 @@ export class UpdateVillainUseCase {
     critChance,
     teamAffinity,
     energyCost,
-    damageReduction
+    damageReduction,
+    owner
   }) {
     if (!id) throw new Error('Villain id is required');
     
@@ -65,7 +66,8 @@ export class UpdateVillainUseCase {
       critChance: critChance !== undefined ? critChance : existingVillain.critChance,
       teamAffinity: teamAffinity !== undefined ? teamAffinity : existingVillain.teamAffinity,
       energyCost: energyCost !== undefined ? energyCost : existingVillain.energyCost,
-      damageReduction: damageReduction !== undefined ? damageReduction : existingVillain.damageReduction
+      damageReduction: damageReduction !== undefined ? damageReduction : existingVillain.damageReduction,
+      owner: owner !== undefined ? owner : existingVillain.owner // Preservar owner existente
     });
     
     // Preservar hpCurrent si existe y no se proporciona un nuevo valor

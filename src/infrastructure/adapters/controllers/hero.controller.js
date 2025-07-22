@@ -7,6 +7,7 @@ export class HeroController {
     findHeroesByCityUseCase,
     updateHeroUseCase,
     deleteHeroUseCase,
+    verifyHeroAccessUseCase,
   }) {
     this.createHeroUseCase = createHeroUseCase;
     this.getHeroUseCase = getHeroUseCase;
@@ -14,6 +15,7 @@ export class HeroController {
     this.findHeroesByCityUseCase = findHeroesByCityUseCase;
     this.updateHeroUseCase = updateHeroUseCase;
     this.deleteHeroUseCase = deleteHeroUseCase;
+    this.verifyHeroAccessUseCase = verifyHeroAccessUseCase;
   }
 
   async create(req, res, next) {
@@ -28,7 +30,8 @@ export class HeroController {
 
   async get(req, res, next) {
     try {
-      const hero = await this.getHeroUseCase.execute(req.params.id);
+      const userId = req.user.id; // Del authMiddleware
+      const hero = await this.verifyHeroAccessUseCase.execute(req.params.id, userId);
       res.json(hero);
     } catch (err) {
       next(err);

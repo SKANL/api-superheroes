@@ -43,6 +43,17 @@
                     <label for="register-confirm-password">Confirmar contraseña</label>
                     <input type="password" id="register-confirm-password" required>
                 </div>
+                <div>
+                    <label for="register-role">Tipo de cuenta</label>
+                    <select id="register-role" required>
+                        <option value="user" selected>Usuario Normal</option>
+                        <option value="admin">Administrador</option>
+                    </select>
+                    <small style="display: block; color: #666; margin-top: 4px;">
+                        👤 Usuario: Solo lectura y edición limitada<br>
+                        👑 Admin: Control completo y creación de entidades
+                    </small>
+                </div>
                 <button type="submit">Registrarse</button>
             </form>
         </div>

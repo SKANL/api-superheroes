@@ -8,6 +8,11 @@ export class GetUserProfileUseCase {
     if (!user) {
       throw new Error('Usuario no encontrado');
     }
-    return { id: user.id, username: user.username, email: user.email };
+    return { 
+      id: user.id, 
+      username: user.username, 
+      email: user.email, 
+      role: user.role || 'user' // Por compatibilidad con usuarios existentes
+    };
   }
 }

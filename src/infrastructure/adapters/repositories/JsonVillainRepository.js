@@ -42,9 +42,59 @@ export class JsonVillainRepository {
     return data.filter(v => v.owner === ownerId);
   }
 
+  /**
+   * Encuentra villanos por propietario o villanos de administradores
+   * Los usuarios pueden ver sus propios villanos + villanos creados por administradores
+   * @param {string} userId - ID del usuario
+   * @param {Object} userRepository - Repositorio de usuarios para verificar roles
+   * @returns {Promise<Array>} - Lista de villanos accesibles
+   */
+  async findAccessibleByUser(userId, userRepository) {
+    const data = await this._read();
+    const user = await userRepository.findById(userId);
+    
+    if (!user) return [];
+
+    if (user.role === 'admin') {
+      // Los administradores ven todos los villanos
+      return data;
+    }
+
+    // Los usuarios ven sus propios villanos + villanos de administradores
+    const accessibleVillains = [];
+    
+    for (const villain of data) {
+      // Incluir villanos propios
+      if (villain.owner === userId) {
+        accessibleVillains.push(villain);
+        continue;
+      }
+      
+      // Incluir villanos de administradores
+      const villainOwner = await userRepository.findById(villain.owner);
+      if (villainOwner && villainOwner.role === 'admin') {
+        accessibleVillains.push(villain);
+      }
+    }
+    
+    return accessibleVillains;
+  }
+
   async findByCityAndOwner(city, ownerId) {
     const data = await this._read();
     return data.filter(v => v.city === city && v.owner === ownerId);
+  }
+
+  /**
+   * Encuentra villanos por ciudad accesibles por el usuario
+   * @param {string} city - Ciudad
+   * @param {string} userId - ID del usuario
+   * @param {Object} userRepository - Repositorio de usuarios
+   * @returns {Promise<Array>} - Lista de villanos accesibles en la ciudad
+   */
+  async findByCityAccessibleByUser(city, userId, userRepository) {
+    const accessibleVillains = await this.findAccessibleByUser(userId, userRepository);
+    return accessibleVillains.filter(v => v.city === city);
   }
 
   async create(villain) {

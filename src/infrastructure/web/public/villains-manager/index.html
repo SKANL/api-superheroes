@@ -70,6 +70,11 @@
   <script type="module">
     import authService from '/shared/auth.service.js';
     if (!authService.isAuthenticated()) window.location = '/auth';
+    
+    // Importar y configurar el gestor de roles
+    import '/shared/role-manager.js';
+    const roleManager = new RoleManager(authService);
+    
     window.addEventListener('DOMContentLoaded', () => {
       const btn = document.createElement('button');
       btn.id = 'logout-btn';

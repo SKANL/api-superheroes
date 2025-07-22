@@ -41,20 +41,21 @@ class AuthService {
   }
 
   /**
-   * Registra un nuevo usuario
+   * Registra un nuevo usuario (con rol opcional)
    * @param {string} username - Nombre de usuario
    * @param {string} email - Email del usuario
    * @param {string} password - Contraseña del usuario
+   * @param {string} role - Rol del usuario (admin o user)
    * @returns {Promise<Object>} - Datos del usuario y token
    */
-  async register(username, email, password) {
+  async register(username, email, password, role = 'user') {
     try {
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ username, email, password })
+        body: JSON.stringify({ username, email, password, role })
       });
 
       if (!response.ok) {
@@ -139,6 +140,54 @@ class AuthService {
    */
   getUser() {
     return this.user;
+  }
+
+  /**
+   * Verifica si el usuario es administrador
+   * @returns {boolean} - True si es administrador
+   */
+  isAdmin() {
+    return this.user && this.user.role === 'admin';
+  }
+
+  /**
+   * Verifica si el usuario es usuario normal
+   * @returns {boolean} - True si es usuario normal
+   */
+  isRegularUser() {
+    return this.user && this.user.role === 'user';
+  }
+
+  /**
+   * Verifica si el usuario puede crear entidades (heroes/villanos)
+   * @returns {boolean} - True si puede crear
+   */
+  canCreateEntities() {
+    return this.isAdmin();
+  }
+
+  /**
+   * Verifica si el usuario puede editar completamente una entidad
+   * @returns {boolean} - True si puede editar completamente
+   */
+  canFullEdit() {
+    return this.isAdmin();
+  }
+
+  /**
+   * Verifica si el usuario puede editar campos limitados
+   * @returns {boolean} - True si puede editar campos limitados
+   */
+  canLimitedEdit() {
+    return this.isRegularUser();
+  }
+
+  /**
+   * Obtiene el rol del usuario actual
+   * @returns {string|null} - Rol del usuario o null
+   */
+  getUserRole() {
+    return this.user ? this.user.role : null;
   }
 
   /**

@@ -6,6 +6,7 @@ export class VillainController {
     findVillainsByCityUseCase,
     updateVillainUseCase,
     deleteVillainUseCase,
+    verifyVillainAccessUseCase,
   }) {
     this.createVillainUseCase = createVillainUseCase;
     this.getVillainUseCase = getVillainUseCase;
@@ -13,6 +14,7 @@ export class VillainController {
     this.findVillainsByCityUseCase = findVillainsByCityUseCase;
     this.updateVillainUseCase = updateVillainUseCase;
     this.deleteVillainUseCase = deleteVillainUseCase;
+    this.verifyVillainAccessUseCase = verifyVillainAccessUseCase;
   }
 
   async create(req, res, next) {
@@ -27,7 +29,8 @@ export class VillainController {
 
   async get(req, res, next) {
     try {
-      const villain = await this.getVillainUseCase.execute(req.params.id);
+      const userId = req.user.id; // Del authMiddleware
+      const villain = await this.verifyVillainAccessUseCase.execute(req.params.id, userId);
       res.json(villain);
     } catch (err) {
       next(err);

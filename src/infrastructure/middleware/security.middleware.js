@@ -1,7 +1,17 @@
 import helmet from 'helmet';
 // Middleware de seguridad (helmet, headers, etc.)
 export const SecurityMiddleware = {
-  helmet: () => helmet(),
+  helmet: () => helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: [],
+      },
+    },
+  }),
   securityHeaders: () => (req, res, next) => {
     next();
   },

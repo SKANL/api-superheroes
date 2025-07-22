@@ -61,10 +61,13 @@ import { GetUserProfileUseCase } from '../../application/use-cases/auth/GetUserP
 import { AuthController } from '../adapters/controllers/auth.controller.js';
 import { authMiddleware } from '../middleware/auth.middleware.js';
 import { ownershipMiddlewareFactory } from '../middleware/ownership.middleware.js';
+import { roleAuthorizationMiddlewareFactory } from '../middleware/role-authorization.middleware.js';
 import { ValidateBattleOwnershipUseCase } from '../../application/use-cases/ValidateBattleOwnershipUseCase.js';
 import { ValidateTeamBattleOwnershipUseCase } from '../../application/use-cases/ValidateTeamBattleOwnershipUseCase.js';
 import { ValidateHeroOwnershipUseCase } from '../../application/use-cases/ValidateHeroOwnershipUseCase.js';
 import { ValidateVillainOwnershipUseCase } from '../../application/use-cases/ValidateVillainOwnershipUseCase.js';
+import { VerifyHeroAccessUseCase } from '../../application/use-cases/VerifyHeroAccessUseCase.js';
+import { VerifyVillainAccessUseCase } from '../../application/use-cases/VerifyVillainAccessUseCase.js';
 
 /**
  * Crea y configura el servidor Express con rutas y middleware.
@@ -112,15 +115,15 @@ export function createApp() {
   const getUserProfileUseCase = new GetUserProfileUseCase(userRepo);
   const createHeroUseCase = new CreateHeroUseCase(heroRepo);
   const getHeroUseCase = new GetHeroUseCase(heroRepo);
-  const listHeroesUseCase = new ListHeroesUseCase(heroRepo);
-  const findHeroesByCityUseCase = new FindHeroesByCityUseCase(heroRepo);
+  const listHeroesUseCase = new ListHeroesUseCase(heroRepo, userRepo);
+  const findHeroesByCityUseCase = new FindHeroesByCityUseCase(heroRepo, userRepo);
   const updateHeroUseCase = new UpdateHeroUseCase(heroRepo);
   const deleteHeroUseCase = new DeleteHeroUseCase(heroRepo);
 
   const createVillainUseCase = new CreateVillainUseCase(villainRepo);
   const getVillainUseCase = new GetVillainUseCase(villainRepo);
-  const listVillainsUseCase = new ListVillainsUseCase(villainRepo);
-  const findVillainsByCityUseCase = new FindVillainsByCityUseCase(villainRepo);
+  const listVillainsUseCase = new ListVillainsUseCase(villainRepo, userRepo);
+  const findVillainsByCityUseCase = new FindVillainsByCityUseCase(villainRepo, userRepo);
   const updateVillainUseCase = new UpdateVillainUseCase(villainRepo);
   const deleteVillainUseCase = new DeleteVillainUseCase(villainRepo);
 
@@ -148,13 +151,9 @@ export function createApp() {
     villainRepository: villainRepo
   });
 
-  // Ownership middleware factory con todos los repositorios
-  const ownershipMiddleware = ownershipMiddlewareFactory({
-    battleRepository: battleRepo,
-    teamBattleRepository: teamBattleRepo,
-    heroRepository: heroRepo,
-    villainRepository: villainRepo
-  });
+  // Casos de uso de verificación de acceso
+  const verifyHeroAccessUseCase = new VerifyHeroAccessUseCase(heroRepo, userRepo);
+  const verifyVillainAccessUseCase = new VerifyVillainAccessUseCase(villainRepo, userRepo);
 
   // Controllers
   const authController = new AuthController({
@@ -175,8 +174,8 @@ export function createApp() {
     performRoundUseCase,
     performAttackUseCase
   });
-  const heroController = new HeroController({ createHeroUseCase, getHeroUseCase, listHeroesUseCase, findHeroesByCityUseCase, updateHeroUseCase, deleteHeroUseCase });
-  const villainController = new VillainController({ createVillainUseCase, getVillainUseCase, listVillainsUseCase, findVillainsByCityUseCase, updateVillainUseCase, deleteVillainUseCase });
+  const heroController = new HeroController({ createHeroUseCase, getHeroUseCase, listHeroesUseCase, findHeroesByCityUseCase, updateHeroUseCase, deleteHeroUseCase, verifyHeroAccessUseCase });
+  const villainController = new VillainController({ createVillainUseCase, getVillainUseCase, listVillainsUseCase, findVillainsByCityUseCase, updateVillainUseCase, deleteVillainUseCase, verifyVillainAccessUseCase });
   const battleController = new BattleController({
     createBattleUseCase,
     getBattleUseCase,
@@ -185,6 +184,18 @@ export function createApp() {
     listBattlesByVillainUseCase,
     performBattleAttackUseCase,
     finishBattleUseCase
+  });
+
+  // Middleware de autorización
+  const ownershipMiddleware = ownershipMiddlewareFactory({
+    battleRepository: battleRepo,
+    teamBattleRepository: teamBattleRepo,
+    heroRepository: heroRepo,
+    villainRepository: villainRepo
+  });
+  
+  const roleAuthMiddleware = roleAuthorizationMiddlewareFactory({
+    userRepository: userRepo
   });
 
   // Rutas
@@ -199,7 +210,8 @@ export function createApp() {
       city: cityController
     },
     server.app,
-    ownershipMiddleware
+    ownershipMiddleware,
+    roleAuthMiddleware
   );
   server.setupRoutes(routes);
   server.setupErrorHandling();

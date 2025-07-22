@@ -16,6 +16,14 @@ export class LoginUserUseCase {
       throw new Error('Credenciales inválidas');
     }
     const token = JWTService.sign({ userId: user.id });
-    return { token, user: { id: user.id, username: user.username, email: user.email } };
+    return { 
+      token, 
+      user: { 
+        id: user.id, 
+        username: user.username, 
+        email: user.email,
+        role: user.role || 'user'
+      } 
+    };
   }
 }

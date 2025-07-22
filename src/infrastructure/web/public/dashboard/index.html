@@ -243,6 +243,11 @@
   <script type="module">
     import authService from '/shared/auth.service.js';
     if (!authService.isAuthenticated()) window.location = '/auth';
+    
+    // Importar y configurar el gestor de roles
+    import '/shared/role-manager.js';
+    const roleManager = new RoleManager(authService);
+    
     window.addEventListener('DOMContentLoaded', () => {
       const btn = document.createElement('button');
       btn.id = 'logout-btn';
@@ -252,7 +257,38 @@
       btn.style.right = '20px';
       btn.addEventListener('click', () => { authService.logout(); window.location = '/auth'; });
       document.body.appendChild(btn);
+      
+      // Configurar visibilidad basada en roles
+      setupDashboardPermissions();
     });
+    
+    function setupDashboardPermissions() {
+      const user = authService.getUser();
+      
+      // Agregar indicadores de permisos a las tarjetas
+      const heroCard = document.querySelector('.hero-card');
+      const villainCard = document.querySelector('.villain-card');
+      
+      if (heroCard && !authService.canCreateEntities()) {
+        const restriction = document.createElement('div');
+        restriction.innerHTML = `
+          <small style="color: #faad14; font-weight: bold;">
+            ⚠️ Solo lectura - Requiere permisos de admin para crear
+          </small>
+        `;
+        heroCard.querySelector('.card-body').appendChild(restriction);
+      }
+      
+      if (villainCard && !authService.canCreateEntities()) {
+        const restriction = document.createElement('div');
+        restriction.innerHTML = `
+          <small style="color: #faad14; font-weight: bold;">
+            ⚠️ Solo lectura - Requiere permisos de admin para crear
+          </small>
+        `;
+        villainCard.querySelector('.card-body').appendChild(restriction);
+      }
+    }
   </script>
   <script type="module">
     import authService from '/shared/auth.service.js';
@@ -260,12 +296,26 @@
     window.addEventListener('DOMContentLoaded', () => {
       const headerContainer = document.querySelector('header .container');
       const user = authService.getUser();
+      
+      // Crear información del usuario con rol
+      const userInfo = document.createElement('div');
+      userInfo.style.display = 'flex';
+      userInfo.style.alignItems = 'center';
+      userInfo.style.gap = '15px';
+      
       const userSpan = document.createElement('span');
       userSpan.id = 'user-info';
-      userSpan.textContent = `Usuario: ${user.username || user.email}`;
+      userSpan.innerHTML = `
+        <div style="text-align: right;">
+          <div>👤 ${user.username || user.email}</div>
+          <div style="font-size: 12px; opacity: 0.8;">
+            ${user.role === 'admin' ? '👑 Administrador' : '🔒 Usuario'}
+          </div>
+        </div>
+      `;
       userSpan.style.color = 'white';
-      userSpan.style.marginLeft = '20px';
-      headerContainer.appendChild(userSpan);
+      userInfo.appendChild(userSpan);
+      
       const btn = document.createElement('button');
       btn.id = 'logout-btn';
       btn.textContent = 'Cerrar sesión';
@@ -275,9 +325,10 @@
       btn.style.padding = '8px 16px';
       btn.style.borderRadius = '4px';
       btn.style.cursor = 'pointer';
-      btn.style.marginLeft = '20px';
       btn.addEventListener('click', () => { authService.logout(); window.location = '/auth'; });
-      headerContainer.appendChild(btn);
+      userInfo.appendChild(btn);
+      
+      headerContainer.appendChild(userInfo);
     });
   </script>
   <header>

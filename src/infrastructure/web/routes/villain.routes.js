@@ -128,17 +128,22 @@ import { authMiddleware } from '../../middleware/auth.middleware.js';
  */
 import express from 'express';
 import { villainValidation } from '../../middleware/validation.middleware.js';
+
 const router = express.Router();
-export default (controller, ownershipMiddleware) => {
+export default (controller, ownershipMiddleware, roleAuthMiddleware) => {
   
-  // Todas las rutas requieren autenticación
+  // Todas las rutas requieren autenticación y agregar rol del usuario
   router.use(authMiddleware);
+  router.use(roleAuthMiddleware.addUserRole);
+
   /**
    * @swagger
    * /api/villains:
    *   post:
-   *     summary: Crear un nuevo villano
+   *     summary: Crear un nuevo villano (Solo administradores)
    *     tags: [Villains]
+   *     security:
+   *       - bearerAuth: []
    *     requestBody:
    *       required: true
    *       content:
@@ -173,17 +178,19 @@ export default (controller, ownershipMiddleware) => {
    *       400:
    *         description: Datos inválidos
    */
-  router.post('/', villainValidation.create, controller.create.bind(controller));
+  router.post('/', roleAuthMiddleware.requireAdmin, villainValidation.create, controller.create.bind(controller));
   
   /**
    * @swagger
    * /api/villains:
    *   get:
-   *     summary: Listar villanos del usuario autenticado
+   *     summary: Listar villanos accesibles (propios + de administradores)
    *     tags: [Villains]
+   *     security:
+   *       - bearerAuth: []
    *     responses:
    *       200:
-   *         description: Lista de villanos
+   *         description: Lista de villanos accesibles
    *         content:
    *           application/json:
    *             schema:
@@ -197,8 +204,10 @@ export default (controller, ownershipMiddleware) => {
    * @swagger
    * /api/villains/city/{city}:
    *   get:
-   *     summary: Buscar villanos del usuario por ciudad
+   *     summary: Buscar villanos por ciudad (accesibles por el usuario)
    *     tags: [Villains]
+   *     security:
+   *       - bearerAuth: []
    *     parameters:
    *       - in: path
    *         name: city
@@ -208,7 +217,7 @@ export default (controller, ownershipMiddleware) => {
    *         description: Nombre de la ciudad para buscar
    *     responses:
    *       200:
-   *         description: Lista de villanos en la ciudad especificada
+   *         description: Lista de villanos accesibles en la ciudad especificada
    *         content:
    *           application/json:
    *             schema:
@@ -224,6 +233,8 @@ export default (controller, ownershipMiddleware) => {
    *   get:
    *     summary: Obtener un villano por ID
    *     tags: [Villains]
+   *     security:
+   *       - bearerAuth: []
    *     parameters:
    *       - in: path
    *         name: id
@@ -236,14 +247,19 @@ export default (controller, ownershipMiddleware) => {
    *       404:
    *         description: Villano no encontrado
    */
-  router.get('/:id', ownershipMiddleware.validateVillainOwnership, controller.get.bind(controller));
+  router.get('/:id', controller.get.bind(controller));
 
   /**
    * @swagger
    * /api/villains/{id}:
    *   put:
-   *     summary: Actualizar un villano por ID
+   *     summary: Actualizar un villano
+   *     description: |
+   *       - Administradores: pueden editar cualquier campo de cualquier villano
+   *       - Usuarios: solo pueden editar campos específicos (team, status, stamina, hpCurrent) de villanos accesibles
    *     tags: [Villains]
+   *     security:
+   *       - bearerAuth: []
    *     parameters:
    *       - in: path
    *         name: id
@@ -257,6 +273,11 @@ export default (controller, ownershipMiddleware) => {
    *         application/json:
    *           schema:
    *             $ref: '#/components/schemas/Villain'
+   *           example:
+   *             team: "Nueva Organización"
+   *             status: "envenenado"
+   *             stamina: 80
+   *             hpCurrent: 70
    *     responses:
    *       200:
    *         description: Villano actualizado exitosamente
@@ -266,17 +287,21 @@ export default (controller, ownershipMiddleware) => {
    *               $ref: '#/components/schemas/Villain'
    *       400:
    *         description: Datos inválidos
+   *       403:
+   *         description: Permisos insuficientes o campos no permitidos
    *       404:
    *         description: Villano no encontrado
    */
-  router.put('/:id', ownershipMiddleware.validateVillainOwnership, villainValidation.update, controller.update.bind(controller));
+  router.put('/:id', roleAuthMiddleware.checkEditPermissions, villainValidation.update, controller.update.bind(controller));
 
   /**
    * @swagger
    * /api/villains/{id}:
    *   delete:
-   *     summary: Eliminar un villano por ID
+   *     summary: Eliminar un villano (Solo administradores o propietarios)
    *     tags: [Villains]
+   *     security:
+   *       - bearerAuth: []
    *     parameters:
    *       - in: path
    *         name: id
@@ -286,6 +311,8 @@ export default (controller, ownershipMiddleware) => {
    *     responses:
    *       204:
    *         description: Villano eliminado exitosamente
+   *       403:
+   *         description: Sin permisos para eliminar
    */
   router.delete('/:id', ownershipMiddleware.validateVillainOwnership, controller.delete.bind(controller));
 

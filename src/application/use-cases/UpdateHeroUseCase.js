@@ -30,7 +30,8 @@ export class UpdateHeroUseCase {
     critChance,
     teamAffinity,
     energyCost,
-    damageReduction
+    damageReduction,
+    owner
   }) {
     if (!id) throw new Error('Hero id is required');
     
@@ -67,7 +68,8 @@ export class UpdateHeroUseCase {
       critChance: critChance !== undefined ? critChance : existingHero.critChance,
       teamAffinity: teamAffinity !== undefined ? teamAffinity : existingHero.teamAffinity,
       energyCost: energyCost !== undefined ? energyCost : existingHero.energyCost,
-      damageReduction: damageReduction !== undefined ? damageReduction : existingHero.damageReduction
+      damageReduction: damageReduction !== undefined ? damageReduction : existingHero.damageReduction,
+      owner: owner !== undefined ? owner : existingHero.owner // Preservar owner existente
     });
     
     // Preservar hpCurrent si existe y no se proporciona un nuevo valor

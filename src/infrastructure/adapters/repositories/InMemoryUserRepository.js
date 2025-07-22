@@ -8,12 +8,13 @@ export class InMemoryUserRepository extends IUserRepository {
     this.nextId = 1;
   }
 
-  async create({ username, email, passwordHash }) {
+  async create({ username, email, passwordHash, role = 'user' }) {
     const user = new User({
       id: String(this.nextId++),
       username,
       email,
       passwordHash,
+      role,
       createdAt: new Date()
     });
     this.users.push(user);

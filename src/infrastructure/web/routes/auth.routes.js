@@ -24,18 +24,50 @@ export default controller => {
    *           schema:
    *             type: object
    *             required:
+   *               - username
    *               - email
    *               - password
    *             properties:
+   *               username:
+   *                 type: string
+   *                 example: "johndoe"
    *               email:
    *                 type: string
+   *                 format: email
+   *                 example: "john@example.com"
    *               password:
    *                 type: string
+   *                 minLength: 6
+   *                 example: "password123"
+   *               role:
+   *                 type: string
+   *                 enum: [admin, user]
+   *                 default: user
+   *                 example: "user"
+   *                 description: "Rol del usuario. Por defecto es 'user'."
    *     responses:
    *       201:
    *         description: Usuario registrado exitosamente
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 token:
+   *                   type: string
+   *                 user:
+   *                   type: object
+   *                   properties:
+   *                     id:
+   *                       type: string
+   *                     username:
+   *                       type: string
+   *                     email:
+   *                       type: string
+   *                     role:
+   *                       type: string
    *       400:
-   *         description: Datos inválidos
+   *         description: Datos inválidos o rol no válido
    */
   router.post('/signup', controller.signup.bind(controller));
 
