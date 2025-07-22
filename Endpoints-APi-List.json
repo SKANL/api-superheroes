@@ -1,0 +1,563 @@
+{
+  "title": "API Superheroes - Lista de Endpoints",
+  "description": "Listado completo de todos los endpoints disponibles en la API de Superhéroes organizados por categorías",
+  "version": "1.0",
+  "categories": {
+    "Authentication": {
+      "description": "Endpoints para autenticación y gestión de usuarios",
+      "base_path": "/auth",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/auth/signup",
+          "alias": "/api/auth/signup",
+          "description": "Registrar un nuevo usuario",
+          "auth_required": false,
+          "body_required": true,
+          "parameters": {
+            "username": "string (required)",
+            "email": "string (required)",
+            "password": "string (required, min 6 chars)",
+            "role": "string (optional, default: user, values: admin|user)"
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/auth/login",
+          "alias": "/api/auth/login",
+          "description": "Iniciar sesión y obtener token JWT",
+          "auth_required": false,
+          "body_required": true,
+          "parameters": {
+            "email": "string (required)",
+            "password": "string (required)"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/auth/me",
+          "alias": "/api/auth/me",
+          "description": "Obtener información del usuario autenticado",
+          "auth_required": true,
+          "body_required": false
+        }
+      ]
+    },
+    "Heroes": {
+      "description": "Gestión de superhéroes",
+      "base_path": "/api/heroes",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/api/heroes",
+          "description": "Crear un nuevo héroe (Solo administradores)",
+          "auth_required": true,
+          "body_required": true,
+          "admin_only": true,
+          "parameters": {
+            "name": "string (required)",
+            "alias": "string (required)",
+            "city": "string (required)",
+            "team": "string (optional)",
+            "health": "integer (optional, 1-1000, default: 100)",
+            "stamina": "integer (optional, 1-100, default: 100)",
+            "status": "string (optional, default: 'healthy')",
+            "specialAbility": "string (optional)",
+            "specialDamage": "integer (optional, 0-200)",
+            "defense": "integer (optional, 0-100)"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/heroes",
+          "description": "Listar héroes accesibles (propios + de administradores)",
+          "auth_required": true,
+          "body_required": false
+        },
+        {
+          "method": "GET",
+          "path": "/api/heroes/city/:city",
+          "description": "Listar héroes por ciudad (accesibles por el usuario)",
+          "auth_required": true,
+          "body_required": false,
+          "parameters": {
+            "city": "string (path parameter)"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/heroes/:id",
+          "description": "Obtener un héroe por ID",
+          "auth_required": true,
+          "body_required": false,
+          "parameters": {
+            "id": "string (path parameter)"
+          }
+        },
+        {
+          "method": "PUT",
+          "path": "/api/heroes/:id",
+          "description": "Actualizar un héroe (Admins: todos los campos, Usuarios: campos específicos)",
+          "auth_required": true,
+          "body_required": true,
+          "parameters": {
+            "id": "string (path parameter)",
+            "team": "string (users can edit)",
+            "status": "string (users can edit)",
+            "stamina": "integer (users can edit)",
+            "hpCurrent": "integer (users can edit)",
+            "other_fields": "admins only"
+          }
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/heroes/:id",
+          "description": "Eliminar un héroe (Solo administradores o propietarios)",
+          "auth_required": true,
+          "body_required": false,
+          "parameters": {
+            "id": "string (path parameter)"
+          }
+        }
+      ]
+    },
+    "Villains": {
+      "description": "Gestión de villanos",
+      "base_path": "/api/villains",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/api/villains",
+          "description": "Crear un nuevo villano (Solo administradores)",
+          "auth_required": true,
+          "body_required": true,
+          "admin_only": true,
+          "parameters": {
+            "name": "string (required)",
+            "alias": "string (required)",
+            "city": "string (required)",
+            "team": "string (optional)",
+            "health": "integer (optional, 1-1000, default: 100)",
+            "stamina": "integer (optional, 1-100, default: 100)",
+            "status": "string (optional, default: 'healthy')",
+            "specialAbility": "string (optional)",
+            "specialDamage": "integer (optional, 0-200)",
+            "defense": "integer (optional, 0-100)"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/villains",
+          "description": "Listar villanos accesibles (propios + de administradores)",
+          "auth_required": true,
+          "body_required": false
+        },
+        {
+          "method": "GET",
+          "path": "/api/villains/city/:city",
+          "description": "Buscar villanos por ciudad (accesibles por el usuario)",
+          "auth_required": true,
+          "body_required": false,
+          "parameters": {
+            "city": "string (path parameter)"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/villains/:id",
+          "description": "Obtener un villano por ID",
+          "auth_required": true,
+          "body_required": false,
+          "parameters": {
+            "id": "string (path parameter)"
+          }
+        },
+        {
+          "method": "PUT",
+          "path": "/api/villains/:id",
+          "description": "Actualizar un villano (Admins: todos los campos, Usuarios: campos específicos)",
+          "auth_required": true,
+          "body_required": true,
+          "parameters": {
+            "id": "string (path parameter)",
+            "team": "string (users can edit)",
+            "status": "string (users can edit)",
+            "stamina": "integer (users can edit)",
+            "hpCurrent": "integer (users can edit)",
+            "other_fields": "admins only"
+          }
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/villains/:id",
+          "description": "Eliminar un villano (Solo administradores o propietarios)",
+          "auth_required": true,
+          "body_required": false,
+          "parameters": {
+            "id": "string (path parameter)"
+          }
+        }
+      ]
+    },
+    "Battles": {
+      "description": "Gestión de batallas entre héroes y villanos",
+      "base_path": "/api/battles",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/api/battles",
+          "description": "Registrar una nueva batalla",
+          "auth_required": true,
+          "body_required": true,
+          "parameters": {
+            "heroId": "string (required)",
+            "villainId": "string (required)"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/battles",
+          "description": "Listar todas las batallas",
+          "auth_required": true,
+          "body_required": false
+        },
+        {
+          "method": "GET",
+          "path": "/api/battles/:id",
+          "description": "Obtener una batalla por ID",
+          "auth_required": true,
+          "body_required": false,
+          "parameters": {
+            "id": "string (path parameter)"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/battles/hero/:heroId",
+          "description": "Listar batallas por héroe",
+          "auth_required": true,
+          "body_required": false,
+          "parameters": {
+            "heroId": "string (path parameter)"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/battles/villain/:villainId",
+          "description": "Listar batallas por villano",
+          "auth_required": true,
+          "body_required": false,
+          "parameters": {
+            "villainId": "string (path parameter)"
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/battles/:id/attack",
+          "description": "Ejecutar un ataque en una batalla",
+          "auth_required": true,
+          "body_required": true,
+          "parameters": {
+            "id": "string (path parameter)",
+            "attackType": "string (required, values: normal|special)"
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/battles/:id/finish",
+          "description": "Finalizar la batalla y devolver resultados",
+          "auth_required": true,
+          "body_required": false,
+          "parameters": {
+            "id": "string (path parameter)"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/battles/:id/state",
+          "description": "Obtener el estado actual de una batalla",
+          "auth_required": true,
+          "body_required": false,
+          "parameters": {
+            "id": "string (path parameter)"
+          }
+        }
+      ]
+    },
+    "Team_Battles": {
+      "description": "Gestión de batallas por equipos",
+      "base_path": "/api/team-battles",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/api/team-battles",
+          "description": "Registrar una nueva batalla por equipos (el usuario autenticado será el propietario)",
+          "auth_required": true,
+          "body_required": true,
+          "parameters": {
+            "heroIds": "array of strings (required)",
+            "villainIds": "array of strings (required)",
+            "mode": "string (optional, values: manual|auto, default: manual)"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/team-battles",
+          "description": "Listar todas las batallas por equipos del usuario autenticado",
+          "auth_required": true,
+          "body_required": false
+        },
+        {
+          "method": "GET",
+          "path": "/api/team-battles/:id",
+          "description": "Obtener una batalla por equipos por ID (requiere ser propietario)",
+          "auth_required": true,
+          "body_required": false,
+          "parameters": {
+            "id": "string (path parameter)"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/team-battles/hero/:heroId",
+          "description": "Listar batallas por equipos por héroe",
+          "auth_required": true,
+          "body_required": false,
+          "parameters": {
+            "heroId": "string (path parameter)"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/team-battles/villain/:villainId",
+          "description": "Listar batallas por equipos por villano",
+          "auth_required": true,
+          "body_required": false,
+          "parameters": {
+            "villainId": "string (path parameter)"
+          }
+        },
+        {
+          "method": "PUT",
+          "path": "/api/team-battles/:id",
+          "description": "Actualizar una batalla por equipos (requiere ser propietario)",
+          "auth_required": true,
+          "body_required": true,
+          "parameters": {
+            "id": "string (path parameter)"
+          }
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/team-battles/:id",
+          "description": "Eliminar una batalla por equipos (requiere ser propietario)",
+          "auth_required": true,
+          "body_required": false,
+          "parameters": {
+            "id": "string (path parameter)"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/api/team-battles/:id/state",
+          "description": "Obtener el estado actual de la batalla por equipos",
+          "auth_required": true,
+          "body_required": false,
+          "parameters": {
+            "id": "string (path parameter)"
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/team-battles/:id/restart",
+          "description": "Reiniciar una batalla por equipos",
+          "auth_required": true,
+          "body_required": false,
+          "parameters": {
+            "id": "string (path parameter)"
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/team-battles/:id/round",
+          "description": "Ejecutar una ronda completa en modo automático",
+          "auth_required": true,
+          "body_required": false,
+          "parameters": {
+            "id": "string (path parameter)"
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/team-battles/:id/finish",
+          "description": "Finalizar la batalla por equipos",
+          "auth_required": true,
+          "body_required": false,
+          "parameters": {
+            "id": "string (path parameter)"
+          }
+        },
+        {
+          "method": "POST",
+          "path": "/api/team-battles/:id/attack",
+          "description": "Ejecutar un ataque en el juego de peleas con habilidades especiales",
+          "auth_required": true,
+          "body_required": true,
+          "parameters": {
+            "id": "string (path parameter)",
+            "attackerId": "string (required)",
+            "targetId": "string (required)",
+            "attackType": "string (optional, values: normal|special, default: normal)"
+          }
+        }
+      ]
+    },
+    "Cities": {
+      "description": "Gestión de ciudades disponibles",
+      "base_path": "/api/cities",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/api/cities",
+          "description": "Obtener lista de ciudades válidas",
+          "auth_required": false,
+          "body_required": false
+        }
+      ]
+    },
+    "System": {
+      "description": "Endpoints del sistema y estado",
+      "base_path": "/api",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/",
+          "description": "Redirección al dashboard de autenticación",
+          "auth_required": false,
+          "body_required": false,
+          "redirect_to": "/auth"
+        },
+        {
+          "method": "GET",
+          "path": "/api/status",
+          "description": "Obtener estado de la API",
+          "auth_required": false,
+          "body_required": false,
+          "response": {
+            "success": "boolean",
+            "message": "string",
+            "version": "string",
+            "environment": "string",
+            "timestamp": "ISO string"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/health",
+          "description": "Endpoint de health check",
+          "auth_required": false,
+          "body_required": false
+        }
+      ]
+    },
+    "Documentation": {
+      "description": "Documentación y interfaces de usuario",
+      "base_path": "/api/docs",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/api/docs",
+          "description": "Documentación Swagger de la API",
+          "auth_required": false,
+          "body_required": false,
+          "content_type": "text/html"
+        }
+      ]
+    },
+    "User_Interfaces": {
+      "description": "Interfaces de usuario para gestión",
+      "base_path": "/",
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/auth",
+          "description": "Interfaz de autenticación",
+          "auth_required": false,
+          "body_required": false,
+          "content_type": "text/html"
+        },
+        {
+          "method": "GET",
+          "path": "/dashboard",
+          "description": "Dashboard principal",
+          "auth_required": false,
+          "body_required": false,
+          "content_type": "text/html"
+        },
+        {
+          "method": "GET",
+          "path": "/api/heroes-manager",
+          "description": "Interfaz de gestión de héroes",
+          "auth_required": false,
+          "body_required": false,
+          "content_type": "text/html"
+        },
+        {
+          "method": "GET",
+          "path": "/api/villains-manager",
+          "description": "Interfaz de gestión de villanos",
+          "auth_required": false,
+          "body_required": false,
+          "content_type": "text/html"
+        },
+        {
+          "method": "GET",
+          "path": "/api/battles-manager",
+          "description": "Interfaz de gestión de batallas",
+          "auth_required": false,
+          "body_required": false,
+          "content_type": "text/html"
+        },
+        {
+          "method": "GET",
+          "path": "/api/team-battles-manager",
+          "description": "Interfaz de gestión de batallas por equipos",
+          "auth_required": false,
+          "body_required": false,
+          "content_type": "text/html"
+        },
+        {
+          "method": "GET",
+          "path": "/test-swagger",
+          "description": "Interfaz de prueba de Swagger",
+          "auth_required": false,
+          "body_required": false,
+          "content_type": "text/html"
+        },
+        {
+          "method": "GET",
+          "path": "/test-simple",
+          "description": "Interfaz simple de pruebas",
+          "auth_required": false,
+          "body_required": false,
+          "content_type": "text/html"
+        },
+        {
+          "method": "GET",
+          "path": "/test-filter",
+          "description": "Interfaz de pruebas con filtros",
+          "auth_required": false,
+          "body_required": false,
+          "content_type": "text/html"
+        }
+      ]
+    }
+  },
+  "notes": {
+    "authentication": "La mayoría de endpoints requieren autenticación JWT mediante header 'Authorization: Bearer <token>'",
+    "authorization": "Los usuarios normales solo pueden acceder a sus propios recursos. Los administradores tienen acceso completo",
+    "ownership": "Algunos endpoints requieren que el usuario sea propietario del recurso o sea administrador",
+    "content_type": "Los endpoints API esperan 'application/json' en el Content-Type header para requests con body",
+    "base_url": "Todos los endpoints deben ser precedidos por la URL base del servidor (ej: http://localhost:3000)"
+  }
+}

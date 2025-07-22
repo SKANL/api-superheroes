@@ -15,7 +15,7 @@ export class ValidateVillainOwnershipUseCase {
    * @returns {Promise<boolean>} - True si el usuario es propietario, false en caso contrario
    */
   async execute(villainId, userId) {
-    const villain = await this.villainRepository.getById(villainId);
+    const villain = await this.villainRepository.findById(villainId);
     
     if (!villain) {
       return false;

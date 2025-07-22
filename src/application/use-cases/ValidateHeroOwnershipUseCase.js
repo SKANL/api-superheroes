@@ -15,7 +15,7 @@ export class ValidateHeroOwnershipUseCase {
    * @returns {Promise<boolean>} - True si el usuario es propietario, false en caso contrario
    */
   async execute(heroId, userId) {
-    const hero = await this.heroRepository.getById(heroId);
+    const hero = await this.heroRepository.findById(heroId);
     
     if (!hero) {
       return false;
