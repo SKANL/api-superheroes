@@ -37,7 +37,11 @@ export class TeamBattleController {
   async selectSideForBattle(req, res, next) {
     try {
       const { id } = req.params;
-      const { side } = req.body;
+      // Aceptar también valores plurales desde el frontend
+      let { side } = req.body;
+      // Normalizar 'heroes'/'villains' a singular
+      if (side === 'heroes') side = 'hero';
+      if (side === 'villains') side = 'villain';
       const userId = req.user?.id || req.user?._id;
       if (!['hero', 'villain'].includes(side)) {
         return res.status(400).json({ message: 'Invalid side' });
