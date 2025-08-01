@@ -162,17 +162,9 @@ export function createApp() {
     getUserProfileUseCase
   });
   const teamBattleController = new TeamBattleController({
-    createTeamBattleUseCase,
-    getTeamBattleUseCase,
-    listTeamBattlesUseCase,
-    listTeamBattlesByHeroUseCase,
-    listTeamBattlesByVillainUseCase,
-    deleteTeamBattleUseCase,
-    getTeamBattleStateUseCase,
-    updateTeamBattleUseCase,
-    restartTeamBattleUseCase,
-    performRoundUseCase,
-    performAttackUseCase
+    teamBattleRepository: teamBattleRepo,
+    heroRepository: heroRepo,
+    villainRepository: villainRepo
   });
   const heroController = new HeroController({ createHeroUseCase, getHeroUseCase, listHeroesUseCase, findHeroesByCityUseCase, updateHeroUseCase, deleteHeroUseCase, verifyHeroAccessUseCase });
   const villainController = new VillainController({ createVillainUseCase, getVillainUseCase, listVillainsUseCase, findVillainsByCityUseCase, updateVillainUseCase, deleteVillainUseCase, verifyVillainAccessUseCase });

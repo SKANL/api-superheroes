@@ -14,7 +14,7 @@ import { CustomError } from '../../shared/exceptions/CustomError.js';
  * @property {string} owner - ID del usuario propietario
  */
 export class TeamBattle {
-  constructor({ id, heroIds, villainIds, date, result, rounds, currentRoundIndex, status, characters, mode, owner }) {
+  constructor({ id, heroIds, villainIds, date, result, rounds, currentRoundIndex, status, characters, mode, owner, selectedSides }) {
     if (!Array.isArray(heroIds) || heroIds.length < 1) {
       throw new CustomError('heroIds must be a non-empty array', 400);
     }
@@ -35,5 +35,6 @@ export class TeamBattle {
     this.characters = Array.isArray(characters) ? characters : []; // Estado de salud e isAlive
     this.mode = mode || 'manual'; // 'manual' | 'auto'
     this.owner = owner;
+    this.selectedSides = selectedSides || {}; // { [userId]: 'hero' | 'villain' }
   }
 }

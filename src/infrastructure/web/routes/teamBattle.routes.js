@@ -475,6 +475,74 @@ export default (controller, ownershipMiddleware) => {
   router.post('/:id/attack', ownershipMiddleware.validateTeamBattleOwnership, teamBattleValidation.idParam, controller.performAttack.bind(controller));
   
   router.post('/:id/restart', ownershipMiddleware.validateTeamBattleOwnership, teamBattleValidation.idParam, controller.restart.bind(controller));
+
+  /**
+   * @swagger
+   * /api/team-battles/{id}/start:
+   *   post:
+   *     summary: Iniciar o reiniciar una batalla por equipos (si está finished la reinicia, si está in_progress solo devuelve el estado)
+   *     tags: [TeamBattles]
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *     responses:
+   *       200:
+   *         description: Estado actualizado de la batalla
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/TeamBattle'
+   *       404:
+   *         description: Batalla por equipos no encontrada
+   */
+  router.post('/:id/start', ownershipMiddleware.validateTeamBattleOwnership, teamBattleValidation.idParam, controller.start.bind(controller));
+
+  /**
+   * @swagger
+   * /api/team-battles/{id}/select-side:
+   *   post:
+   *     summary: Seleccionar bando en una batalla por equipos específica
+   *     tags: [TeamBattles]
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - side
+   *             properties:
+   *               side:
+   *                 type: string
+   *                 enum: [hero, villain]
+   *                 example: "hero"
+   *     responses:
+   *       200:
+   *         description: Bando seleccionado correctamente
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 message:
+   *                   type: string
+   *                 selectedSides:
+   *                   type: object
+   *       400:
+   *         description: Petición inválida
+   *       404:
+   *         description: Batalla por equipos no encontrada
+   */
+  router.post('/:id/select-side', ownershipMiddleware.validateTeamBattleOwnership, teamBattleValidation.idParam, controller.selectSideForBattle.bind(controller));
   
   /**
    * @swagger
