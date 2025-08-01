@@ -18,7 +18,7 @@ export class ServerConfig {
   setupMiddleware() {
     // Middlewares globales
     this.app.use(LoggerMiddleware.detailed());
-    // CORS completamente abierto para todos los orígenes
+    // CORS configurado para orígenes permitidos (incluye localhost:5173)
     this.app.use(CorsMiddleware.permissive());
     this.app.use(SecurityMiddleware.helmet());
     this.app.use(
@@ -273,7 +273,7 @@ export class ServerConfig {
     process.env.NODE_ENV = process.env.NODE_ENV || 'development';
     process.env.PORT = process.env.PORT || '3000';
     process.env.CORS_ORIGINS =
-      process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:3001';
+      process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:3001,http://localhost:5173';
   }
 }
 
