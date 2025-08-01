@@ -17,6 +17,8 @@ export class ServerConfig {
 
   setupMiddleware() {
     // Middlewares globales
+    // Confiar en proxies (p. ej. Railway) para leer correctamente X-Forwarded-For
+    this.app.set('trust proxy', 1);
     this.app.use(LoggerMiddleware.detailed());
     // CORS configurado para orígenes permitidos (incluye localhost:5173)
     this.app.use(CorsMiddleware.permissive());
