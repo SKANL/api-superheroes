@@ -43,7 +43,14 @@ export class BattleController {
 
   async list(req, res, next) {
     try {
-      const battles = await this.listBattlesUseCase.execute();
+      const userId = req.user.id;
+      const userRole = req.user.role;
+      
+      // Si es admin, ve todas las batallas; si es user, solo las propias
+      const battles = userRole === 'admin' 
+        ? await this.listBattlesUseCase.execute()
+        : await this.listBattlesUseCase.execute(userId);
+        
       res.json(battles);
     } catch (err) {
       next(err);

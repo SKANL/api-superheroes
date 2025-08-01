@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import { UpdateTeamBattleUseCase } from '../../../src/application/use-cases/UpdateTeamBattleUseCase.js';
 import { TeamBattle } from '../../../src/domain/entities/TeamBattle.js';
 

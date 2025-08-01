@@ -43,21 +43,21 @@ export class TeamBattleController {
   // POST /api/team-battles/:id/select-side
   async selectSideForBattle(req, res, next) {
     console.log('[TeamBattleController] selectSideForBattle called', { params: req.params, body: req.body, user: req.user });
+    console.log('[DEBUG selectSideForBattle] USER:', req.user);
+    console.log('[DEBUG selectSideForBattle] BODY:', req.body);
     try {
       const { id } = req.params;
-      console.log('[TeamBattleController] selectSideForBattle - id:', id);
       // Aceptar también valores plurales desde el frontend
       let { side } = req.body;
-      console.log('[TeamBattleController] selectSideForBattle - raw side:', side);
+      console.log('[DEBUG selectSideForBattle] SIDE:', side);
       // Normalizar 'heroes'/'villains' a singular
       if (side === 'heroes') side = 'hero';
       if (side === 'villains') side = 'villain';
-      console.log('[TeamBattleController] selectSideForBattle - normalized side:', side);
       const userId = req.user?.id || req.user?._id;
-      console.log('[TeamBattleController] selectSideForBattle - userId:', userId);
+      console.log('[DEBUG selectSideForBattle] userId usado:', userId);
       if (!['hero', 'villain'].includes(side)) {
-        console.warn('[TeamBattleController] selectSideForBattle - invalid side received:', side);
-        return res.status(400).json({ message: 'Invalid side' });
+        console.warn('[DEBUG selectSideForBattle] side no válido justo antes del return 400:', side, typeof side);
+        return res.status(400).json({ error: 'Invalid side selection' });
       }
       const getUseCase = new GetTeamBattleUseCase(this.teamBattleRepository);
       const updateUseCase = new UpdateTeamBattleUseCase(

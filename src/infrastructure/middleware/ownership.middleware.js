@@ -67,11 +67,17 @@ export const ownershipMiddlewareFactory = (deps) => {
    * @param {Function} next - Función next
    */
   const validateTeamBattleOwnership = async (req, res, next) => {
+    console.log('[OWNERSHIP] validateTeamBattleOwnership', {
+      params: req.params,
+      user: req.user
+    });
     try {
       const teamBattleId = req.params.id;
       const userId = req.user.id;
+      console.log('[OWNERSHIP] teamBattleId:', teamBattleId, 'userId:', userId);
 
       if (!teamBattleId || !userId) {
+        console.warn('[OWNERSHIP] Falta teamBattleId o userId');
         return res.status(400).json({ 
           success: false, 
           error: 'ID de batalla por equipos o usuario no proporcionado' 
@@ -79,8 +85,10 @@ export const ownershipMiddlewareFactory = (deps) => {
       }
 
       const teamBattle = await getTeamBattleUseCase.execute(teamBattleId);
+      console.log('[OWNERSHIP] teamBattle encontrado:', teamBattle);
       
       if (!teamBattle) {
+        console.warn('[OWNERSHIP] Batalla por equipos no encontrada');
         return res.status(404).json({ 
           success: false, 
           error: 'Batalla por equipos no encontrada' 
@@ -88,6 +96,7 @@ export const ownershipMiddlewareFactory = (deps) => {
       }
 
       if (teamBattle.owner !== userId) {
+        console.warn('[OWNERSHIP] El usuario no es owner de la batalla', { owner: teamBattle.owner, userId });
         return res.status(403).json({ 
           success: false, 
           error: 'No tienes permiso para acceder a esta batalla por equipos' 

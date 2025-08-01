@@ -9,8 +9,8 @@ describe('Villain Validation Middleware', () => {
     const next = jest.fn();
     await villainValidation.create[0](req, res, next); // body('name')
     // No error yet, validationResult is checked in the last middleware
-    // Now there are 17 validation rules + 1 final middleware = index 17
-    await villainValidation.create[17](req, res, next);
+    // Now there are 16 validation rules + 1 final middleware = index 16
+    await villainValidation.create[16](req, res, next);
     expect(res.status).toHaveBeenCalledWith(400);
   });
 });

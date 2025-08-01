@@ -73,7 +73,30 @@ export class MongoBattleRepository extends BattleRepository {
       status: doc.status,
       characters: doc.characters,
       owner: doc.owner.toString(),
-      // Add populated hero and villain data
+      hero: doc.heroId,
+      villain: doc.villainId
+    }));
+  }
+
+  async findByOwner(ownerId) {
+    const docs = await BattleModel.find({ owner: ownerId })
+      .populate('heroId')
+      .populate('villainId')
+      .lean();
+    return docs.map(doc => new Battle({
+      id: doc._id.toString(),
+      heroId: doc.heroId._id.toString(),
+      villainId: doc.villainId._id.toString(),
+      date: doc.date,
+      result: doc.result,
+      mode: doc.mode,
+      location: doc.location,
+      rounds: doc.rounds,
+      attackHistory: doc.attackHistory,
+      currentRoundIndex: doc.currentRoundIndex,
+      status: doc.status,
+      characters: doc.characters,
+      owner: doc.owner.toString(),
       hero: doc.heroId,
       villain: doc.villainId
     }));

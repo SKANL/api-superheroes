@@ -9,16 +9,18 @@ describe('HeroController Unit', () => {
     findHeroesByCityUseCase: { execute: jest.fn() },
     updateHeroUseCase: { execute: jest.fn() },
     deleteHeroUseCase: { execute: jest.fn() },
+    verifyHeroAccessUseCase: { execute: jest.fn() },
   };
   const controller = new HeroController(mockUseCases);
 
   it('should call createHeroUseCase.execute on create', async () => {
-    const req = { body: { name: 'A', alias: 'B', city: 'C' } };
+    const req = { body: { name: 'A', alias: 'B', city: 'C' }, user: { id: 'user123' } };
     const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
     const next = jest.fn();
     await controller.create(req, res, next);
     expect(mockUseCases.createHeroUseCase.execute).toHaveBeenCalledWith(
-      req.body
+      req.body,
+      'user123'
     );
   });
 });

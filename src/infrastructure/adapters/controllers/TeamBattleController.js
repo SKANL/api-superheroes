@@ -99,6 +99,44 @@ export class TeamBattleController {
       next(err);
     }
   }
+  // POST /api/team-battles/:id/start
+  async start(req, res, next) {
+    try {
+      const { id } = req.params;
+      const battle = await this.getTeamBattleUseCase.execute(id);
+      if (!battle) return res.status(404).json({ message: 'TeamBattle not found' });
+      if (battle.status === 'finished') {
+        const restarted = await this.restartTeamBattleUseCase.execute(id);
+        return res.status(200).json(restarted);
+      }
+      return res.status(200).json(battle);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // POST /api/team-battles/:id/select-side
+  // POST /api/team-battles/:id/select-side
+  async selectSideForBattle(req, res, next) {
+    try {
+      const { id } = req.params;
+      let { side } = req.body;
+      if (side === 'heroes') side = 'hero';
+      if (side === 'villains') side = 'villain';
+      if (!['hero', 'villain'].includes(side)) {
+        return res.status(400).json({ error: 'Invalid side selection' });
+      }
+      const battle = await this.getTeamBattleUseCase.execute(id);
+      if (!battle) return res.status(404).json({ message: 'TeamBattle not found' });
+      const userId = req.user.id;
+      const selectedSides = { ...(battle.selectedSides || {}) };
+      selectedSides[userId] = side;
+      const updated = await this.updateTeamBattleUseCase.execute(id, { selectedSides });
+      return res.status(200).json({ message: 'Bando seleccionado correctamente', selectedSides: updated.selectedSides });
+    } catch (err) {
+      next(err);
+    }
+  }
 
   async state(req, res, next) {
     try {
@@ -140,10 +178,7 @@ export class TeamBattleController {
       next(err);
     }
   }
-  // Alias para select-side route
-  async selectSideForBattle(req, res, next) {
-    return this.selectSide(req, res, next);
-  }
+  // ...existing code...
   async performRound(req, res, next) {
     try {
       const { heroActions, villainActions } = req.body;

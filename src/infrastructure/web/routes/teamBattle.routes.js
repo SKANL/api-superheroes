@@ -511,7 +511,11 @@ export default (controller, ownershipMiddleware) => {
    *       404:
    *         description: Batalla por equipos no encontrada
    */
-  router.post('/:id/select-side', ownershipMiddleware.validateTeamBattleOwnership, teamBattleValidation.idParam, controller.selectSideForBattle.bind(controller));
+  // Debug log para saber si la petición llega a la ruta antes de los middlewares
+  router.post('/:id/select-side', (req, res, next) => {
+    console.log('LLEGA A RUTA SELECT-SIDE', req.params, req.body);
+    next();
+  }, ownershipMiddleware.validateTeamBattleOwnership, teamBattleValidation.selectSide, controller.selectSideForBattle.bind(controller));
   
   /**
    * @swagger

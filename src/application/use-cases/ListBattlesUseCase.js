@@ -4,7 +4,11 @@ export class ListBattlesUseCase {
     this.battleRepository = battleRepository;
   }
 
-  async execute() {
+  async execute(userId = null) {
+    if (userId) {
+      // Filtrar por owner si se especifica un userId
+      return await this.battleRepository.findByOwner(userId);
+    }
     return await this.battleRepository.findAll();
   }
 }

@@ -129,7 +129,7 @@ export class ServerConfig {
         timestamp: new Date().toISOString(),
       });
     });
-    if (routes.health) this.app.use('/health', routes.health);
+    if (routes.health) this.app.use('/api/health', routes.health);
     if (routes.api) {
       const api = routes.api;
       if (api.heroes) this.app.use('/api/heroes', api.heroes);

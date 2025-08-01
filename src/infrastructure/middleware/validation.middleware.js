@@ -92,7 +92,7 @@ export const ValidationMiddleware = {
       body('name').optional().isString(),
       body('alias').optional().isString(),
       body('city').optional().isString(),
-      body('team').optional().isString().withMessage('Team must be a string'),
+      body('team').optional().isString(),
       body('health').optional().isInt({ min: 1, max: 1000 }).withMessage('Health must be between 1 and 1000'),
       body('attack').optional().isInt({ min: 1, max: 200 }).withMessage('Attack must be between 1 and 200'),
       body('defense').optional().isInt({ min: 0, max: 200 }).withMessage('Defense must be between 0 and 200'),
@@ -134,7 +134,11 @@ export const ValidationMiddleware = {
     idParam: [
       param('id').isString().notEmpty().withMessage('id is required'),
       (req, res, next) => {
+        console.log('[VALIDATION] idParam', { params: req.params });
         const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+          console.warn('[VALIDATION] idParam errors:', errors.array());
+        }
         if (!errors.isEmpty()) {
           return res.status(400).json({ errors: errors.array() });
         }
@@ -189,6 +193,16 @@ export const ValidationMiddleware = {
     ],
     idParam: [
       param('id').isString().notEmpty().withMessage('id is required'),
+      (req, res, next) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty())
+          return res.status(400).json({ errors: errors.array() });
+        next();
+      },
+    ],
+    selectSide: [
+      param('id').isString().notEmpty().withMessage('id is required'),
+      body('side').isIn(['hero', 'villain']).withMessage('side must be either hero or villain'),
       (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty())
