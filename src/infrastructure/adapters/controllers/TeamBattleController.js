@@ -117,6 +117,33 @@ export class TeamBattleController {
       next(err);
     }
   }
+  /**
+   * Iniciar o reiniciar una batalla por equipos
+   */
+  async start(req, res, next) {
+    try {
+      const id = req.params.id;
+      const battle = await this.getTeamBattleUseCase.execute(id);
+      if (!battle) {
+        const error = new Error('TeamBattle not found');
+        error.status = 404;
+        throw error;
+      }
+      if (battle.status === 'finished') {
+        const restarted = await this.restartTeamBattleUseCase.execute(id, {});
+        res.json(restarted);
+      } else {
+        const state = await this.getTeamBattleStateUseCase.execute(id);
+        res.json(state);
+      }
+    } catch (err) {
+      next(err);
+    }
+  }
+  // Alias para select-side route
+  async selectSideForBattle(req, res, next) {
+    return this.selectSide(req, res, next);
+  }
   async performRound(req, res, next) {
     try {
       const { heroActions, villainActions } = req.body;
