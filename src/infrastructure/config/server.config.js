@@ -18,7 +18,8 @@ export class ServerConfig {
   setupMiddleware() {
     // Middlewares globales
     this.app.use(LoggerMiddleware.detailed());
-    this.app.use(CorsMiddleware.fromEnvironment());
+    // CORS completamente abierto para todos los orígenes
+    this.app.use(CorsMiddleware.permissive());
     this.app.use(SecurityMiddleware.helmet());
     this.app.use(
       rateLimitInstance.basic({ windowMs: 15 * 60 * 1000, maxRequests: 200 })
