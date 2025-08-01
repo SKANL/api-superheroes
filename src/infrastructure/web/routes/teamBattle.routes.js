@@ -1,36 +1,5 @@
 // Rutas para TeamBattle
 /**
- * @swagger
- * tags:
- *   name: TeamBattles
- *   description: Gestión de batallas por equipos entre héroes y villanos
- *
- * components:
- *   schemas:
- *     TeamBattle:
- *       type: object
- *       properties:
- *         id:
- *           type: string
- *           example: "tb12345"
- *         heroIds:
- *           type: array
- *           items:
- *             type: string
- *           example: ["h1","h2"]
- *         villainIds:
- *           type: array
- *           items:
- *             type: string
- *           example: ["v1","v2"]
- *         date:
- *           type: string
- *           example: "2025-07-10T12:00:00.000Z"
- *         result:
- *           type: string
- *           example: "heroes"
- *         owner:
- *           type: string
  *           example: "user123"
  *           description: "ID del usuario propietario de la batalla por equipos"
  *         rounds:
